@@ -23,6 +23,7 @@ export type Database = {
           employment_type: string | null
           gaps: string[]
           id: string
+          is_active: boolean
           linkedin_job_id: string | null
           location: string | null
           match_score: number | null
@@ -51,6 +52,7 @@ export type Database = {
           employment_type?: string | null
           gaps?: string[]
           id?: string
+          is_active?: boolean
           linkedin_job_id?: string | null
           location?: string | null
           match_score?: number | null
@@ -79,6 +81,7 @@ export type Database = {
           employment_type?: string | null
           gaps?: string[]
           id?: string
+          is_active?: boolean
           linkedin_job_id?: string | null
           location?: string | null
           match_score?: number | null
