@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Trackwise — Job search tracker with AI match scores" },
+      { title: "NextAdventureAI — Job search tracker with AI match scores" },
       {
         name: "description",
         content:
           "Save job postings once, keep every detail organized, and score each role against your resume.",
       },
-      { property: "og:title", content: "Trackwise — Job search tracker" },
+      { property: "og:title", content: "NextAdventureAI — Job search tracker" },
       {
         property: "og:description",
         content: "Save job postings, avoid duplicates and score each role against your resume.",

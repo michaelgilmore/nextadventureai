@@ -17,7 +17,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
               <Compass className="size-4" />
             </span>
-            <span className="font-display text-lg font-semibold">Trackwise</span>
+            <span className="font-display text-lg font-semibold">NextAdventureAI</span>
           </Link>
 
           <nav className="flex items-center gap-1">
