@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ExternalLink, Sparkles } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
+import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
