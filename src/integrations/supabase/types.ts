@@ -14,7 +14,137 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      jobs: {
+        Row: {
+          canonical_url: string
+          company: string | null
+          created_at: string
+          description: string | null
+          employment_type: string | null
+          gaps: string[]
+          id: string
+          linkedin_job_id: string | null
+          location: string | null
+          match_score: number | null
+          match_summary: string | null
+          notes: string | null
+          posted_at: string | null
+          requirements: string[]
+          salary: string | null
+          scored_resume_id: string | null
+          seniority: string | null
+          skills: string[]
+          source: string
+          status: string
+          strengths: string[]
+          title: string | null
+          updated_at: string
+          url: string
+          user_id: string
+          workplace_type: string | null
+        }
+        Insert: {
+          canonical_url: string
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          employment_type?: string | null
+          gaps?: string[]
+          id?: string
+          linkedin_job_id?: string | null
+          location?: string | null
+          match_score?: number | null
+          match_summary?: string | null
+          notes?: string | null
+          posted_at?: string | null
+          requirements?: string[]
+          salary?: string | null
+          scored_resume_id?: string | null
+          seniority?: string | null
+          skills?: string[]
+          source?: string
+          status?: string
+          strengths?: string[]
+          title?: string | null
+          updated_at?: string
+          url: string
+          user_id: string
+          workplace_type?: string | null
+        }
+        Update: {
+          canonical_url?: string
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          employment_type?: string | null
+          gaps?: string[]
+          id?: string
+          linkedin_job_id?: string | null
+          location?: string | null
+          match_score?: number | null
+          match_summary?: string | null
+          notes?: string | null
+          posted_at?: string | null
+          requirements?: string[]
+          salary?: string | null
+          scored_resume_id?: string | null
+          seniority?: string | null
+          skills?: string[]
+          source?: string
+          status?: string
+          strengths?: string[]
+          title?: string | null
+          updated_at?: string
+          url?: string
+          user_id?: string
+          workplace_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_scored_resume_id_fkey"
+            columns: ["scored_resume_id"]
+            isOneToOne: false
+            referencedRelation: "resumes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resumes: {
+        Row: {
+          content_text: string
+          created_at: string
+          file_name: string | null
+          file_path: string | null
+          id: string
+          is_primary: boolean
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_text: string
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          is_primary?: boolean
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_text?: string
+          created_at?: string
+          file_name?: string | null
+          file_path?: string | null
+          id?: string
+          is_primary?: boolean
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
