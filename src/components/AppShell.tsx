@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Compass, FileText, LogOut } from "lucide-react";
+import { BarChart3, Briefcase, Compass, FileText, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -22,13 +22,24 @@ export function AppShell({ children }: { children: ReactNode }) {
 
           <nav className="flex items-center gap-1">
             <Button asChild variant="ghost" size="sm">
-              <Link to="/">Pipeline</Link>
+              <Link to="/">Add job</Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/jobs">
+                <Briefcase className="size-4" /> Jobs
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/skills">
+                <BarChart3 className="size-4" /> Skills
+              </Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
               <Link to="/resume">
                 <FileText className="size-4" /> Resume
               </Link>
             </Button>
+
             {user ? (
               <Button
                 variant="ghost"

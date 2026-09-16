@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResumeRouteImport } from './routes/resume'
+import { Route as SkillsRouteImport } from './routes/skills'
+import { Route as JobsIndexRouteImport } from './routes/jobs.index'
 import { Route as JobsJobIdRouteImport } from './routes/jobs.$jobId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +31,16 @@ const ResumeRoute = ResumeRouteImport.update({
   path: '/resume',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SkillsRoute = SkillsRouteImport.update({
+  id: '/skills',
+  path: '/skills',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JobsIndexRoute = JobsIndexRouteImport.update({
+  id: '/jobs/',
+  path: '/jobs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JobsJobIdRoute = JobsJobIdRouteImport.update({
   id: '/jobs/$jobId',
   path: '/jobs/$jobId',
@@ -39,34 +51,49 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/resume': typeof ResumeRoute
+  '/skills': typeof SkillsRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
+  '/jobs/': typeof JobsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/resume': typeof ResumeRoute
+  '/skills': typeof SkillsRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
+  '/jobs': typeof JobsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/resume': typeof ResumeRoute
+  '/skills': typeof SkillsRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
+  '/jobs/': typeof JobsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/resume' | '/jobs/$jobId'
+  fullPaths: '/' | '/auth' | '/resume' | '/skills' | '/jobs/$jobId' | '/jobs/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/resume' | '/jobs/$jobId'
-  id: '__root__' | '/' | '/auth' | '/resume' | '/jobs/$jobId'
+  to: '/' | '/auth' | '/resume' | '/skills' | '/jobs/$jobId' | '/jobs'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/resume'
+    | '/skills'
+    | '/jobs/$jobId'
+    | '/jobs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   ResumeRoute: typeof ResumeRoute
+  SkillsRoute: typeof SkillsRoute
   JobsJobIdRoute: typeof JobsJobIdRoute
+  JobsIndexRoute: typeof JobsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,6 +119,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResumeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/skills': {
+      id: '/skills'
+      path: '/skills'
+      fullPath: '/skills'
+      preLoaderRoute: typeof SkillsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jobs/': {
+      id: '/jobs/'
+      path: '/jobs'
+      fullPath: '/jobs/'
+      preLoaderRoute: typeof JobsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jobs/$jobId': {
       id: '/jobs/$jobId'
       path: '/jobs/$jobId'
@@ -106,7 +147,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   ResumeRoute: ResumeRoute,
+  SkillsRoute: SkillsRoute,
   JobsJobIdRoute: JobsJobIdRoute,
+  JobsIndexRoute: JobsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
