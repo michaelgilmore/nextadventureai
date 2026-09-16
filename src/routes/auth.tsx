@@ -13,13 +13,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Trackwise Job Search Tracker" },
+      { title: "Sign in — NextAdventureAI Job Search Tracker" },
       {
         name: "description",
         content:
-          "Sign in to Trackwise to save LinkedIn job posts, keep them organized and score them against your resume.",
+          "Sign in to NextAdventureAI to save LinkedIn job posts, keep them organized and score them against your resume.",
       },
-      { property: "og:title", content: "Sign in — Trackwise Job Search Tracker" },
+      { property: "og:title", content: "Sign in — NextAdventureAI Job Search Tracker" },
       {
         property: "og:description",
         content: "Sign in to track job posts and see how well each one matches your resume.",

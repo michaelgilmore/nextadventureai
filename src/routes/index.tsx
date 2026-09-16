@@ -18,13 +18,13 @@ import { processJobLink } from "@/lib/jobs.functions";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Trackwise — Organize your job search with AI match scores" },
+      { title: "NextAdventureAI — Organize your job search with AI match scores" },
       {
         name: "description",
         content:
-          "Paste a LinkedIn job link and Trackwise checks for duplicates, saves the details and scores the role out of 100 against your resume.",
+          "Paste a LinkedIn job link and NextAdventureAI checks for duplicates, saves the details and scores the role out of 100 against your resume.",
       },
-      { property: "og:title", content: "Trackwise — Organize your job search" },
+      { property: "og:title", content: "NextAdventureAI — Organize your job search" },
       {
         property: "og:description",
         content:
@@ -98,7 +98,7 @@ function Home() {
             Paste a job link. Get a <span className="text-gradient">match score</span> out of 100.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Trackwise checks whether you've already seen the role, pulls out the details worth
+            NextAdventureAI checks whether you've already seen the role, pulls out the details worth
             remembering, and compares it to your resume.
           </p>
           <Button asChild size="lg" className="mt-8">

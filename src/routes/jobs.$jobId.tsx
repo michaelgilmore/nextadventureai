@@ -14,13 +14,13 @@ import { rescoreJob } from "@/lib/jobs.functions";
 export const Route = createFileRoute("/jobs/$jobId")({
   head: () => ({
     meta: [
-      { title: "Job details — Trackwise" },
+      { title: "Job details — NextAdventureAI" },
       {
         name: "description",
         content:
           "See the parsed details of a saved job posting plus its AI match score, strengths and gaps versus your resume.",
       },
-      { property: "og:title", content: "Job details — Trackwise" },
+      { property: "og:title", content: "Job details — NextAdventureAI" },
       {
         property: "og:description",
         content: "Parsed job details with an AI match score against your resume.",

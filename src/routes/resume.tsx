@@ -17,16 +17,16 @@ import { saveResume, setPrimaryResume } from "@/lib/resumes.functions";
 export const Route = createFileRoute("/resume")({
   head: () => ({
     meta: [
-      { title: "Your resumes — Trackwise" },
+      { title: "Your resumes — NextAdventureAI" },
       {
         name: "description",
         content:
           "Upload your primary resume so every saved job posting is scored against your real experience.",
       },
-      { property: "og:title", content: "Your resumes — Trackwise" },
+      { property: "og:title", content: "Your resumes — NextAdventureAI" },
       {
         property: "og:description",
-        content: "Upload the resume Trackwise uses to score each job posting out of 100.",
+        content: "Upload the resume NextAdventureAI uses to score each job posting out of 100.",
       },
     ],
   }),
