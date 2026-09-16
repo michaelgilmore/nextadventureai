@@ -84,7 +84,7 @@ async function fetchJobContent(canonicalUrl: string, jobId: string | null): Prom
 
 export const processJobLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { url: string; pastedText?: string }) => {
+  .inputValidator((input: { url: string; pastedText?: string | undefined }) => {
     if (!input?.url?.trim()) throw new Error("Please paste a job link.");
     return { url: input.url.trim(), pastedText: input.pastedText?.trim() ?? "" };
   })

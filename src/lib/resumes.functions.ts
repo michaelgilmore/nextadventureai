@@ -17,11 +17,11 @@ export const saveResume = createServerFn({ method: "POST" })
   .inputValidator(
     (input: {
       title: string;
-      fileName?: string;
-      mimeType?: string;
-      base64?: string;
-      text?: string;
-      makePrimary?: boolean;
+      fileName?: string | undefined;
+      mimeType?: string | undefined;
+      base64?: string | undefined;
+      text?: string | undefined;
+      makePrimary?: boolean | undefined;
     }) => {
       if (!input?.title?.trim()) throw new Error("Give the resume a name.");
       if (!input.base64 && !input.text?.trim()) throw new Error("Upload a file or paste your resume text.");
