@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
+import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -38,6 +39,7 @@ function JobsList() {
   const { user, loading } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
+  const [sort, setSort] = useState<JobSort>("newest");
 
   const jobs = useQuery({
     queryKey: ["jobs", user?.id],
@@ -70,8 +72,11 @@ function JobsList() {
   }
 
   const all = jobs.data ?? [];
-  const visible = all.filter((job) =>
-    filter === "all" ? true : filter === "active" ? job.is_active : !job.is_active,
+  const visible = sortJobs(
+    all.filter((job) =>
+      filter === "all" ? true : filter === "active" ? job.is_active : !job.is_active,
+    ),
+    sort,
   );
 
   return (
@@ -84,18 +89,21 @@ function JobsList() {
             roles count towards your skill statistics.
           </p>
         </div>
-        <div className="flex gap-1 rounded-lg border border-border/70 p-1">
-          {FILTERS.map((option) => (
-            <Button
-              key={option}
-              size="sm"
-              variant={filter === option ? "secondary" : "ghost"}
-              className="capitalize"
-              onClick={() => setFilter(option)}
-            >
-              {option}
-            </Button>
-          ))}
+        <div className="flex flex-wrap items-center gap-3">
+          <JobSortSelect value={sort} onChange={setSort} />
+          <div className="flex gap-1 rounded-lg border border-border/70 p-1">
+            {FILTERS.map((option) => (
+              <Button
+                key={option}
+                size="sm"
+                variant={filter === option ? "secondary" : "ghost"}
+                className="capitalize"
+                onClick={() => setFilter(option)}
+              >
+                {option}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
