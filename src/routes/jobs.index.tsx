@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
+import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
