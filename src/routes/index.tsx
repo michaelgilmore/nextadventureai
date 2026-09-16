@@ -48,6 +48,7 @@ function Home() {
   const [url, setUrl] = useState("");
   const [pastedText, setPastedText] = useState("");
   const [needsText, setNeedsText] = useState(false);
+  const [sort, setSort] = useState<JobSort>("newest");
 
   const jobs = useQuery({
     queryKey: ["jobs", user?.id],
@@ -61,6 +62,7 @@ function Home() {
       return data;
     },
   });
+  const sortedJobs = sortJobs(jobs.data ?? [], sort);
 
   const addJob = useMutation({
     mutationFn: () => process({ data: { url, pastedText: pastedText || undefined } }),
@@ -147,9 +149,12 @@ function Home() {
         )}
       </section>
 
-      <div className="mt-10 flex items-baseline justify-between">
+      <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-semibold">Your pipeline</h2>
-        <span className="text-sm text-muted-foreground">{jobs.data?.length ?? 0} saved</span>
+        <div className="flex items-center gap-4">
+          <JobSortSelect value={sort} onChange={setSort} />
+          <span className="text-sm text-muted-foreground">{jobs.data?.length ?? 0} saved</span>
+        </div>
       </div>
 
       <div className="mt-4 space-y-3">
@@ -159,7 +164,7 @@ function Home() {
           </div>
         )}
 
-        {jobs.data?.map((job) => (
+        {sortedJobs.map((job) => (
           <div key={job.id} className="panel flex items-center gap-5 p-5">
             <ScoreDial score={job.match_score} />
             <div className="min-w-0 flex-1">
