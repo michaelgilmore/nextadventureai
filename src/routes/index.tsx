@@ -117,36 +117,43 @@ function Home() {
       <section className="panel p-6">
         <h1 className="text-2xl font-semibold">Add a job posting</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Paste a LinkedIn job link — duplicates are caught automatically.
+          Paste the job description — duplicates are caught automatically.
         </p>
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+
+        <div className="mt-5 space-y-2">
+          <Label htmlFor="pasted-job">Job description</Label>
+          <Textarea
+            id="pasted-job"
+            rows={10}
+            placeholder="Copy the full job description and paste it here."
+            value={pastedText}
+            onChange={(event) => setPastedText(event.target.value)}
+          />
+          {needsText && (
+            <p className="text-sm text-amber-400">
+              That link couldn't be read automatically — paste the description above.
+            </p>
+          )}
+        </div>
+
+        <div className="mt-4 space-y-2">
+          <Label htmlFor="job-link">Job link (optional)</Label>
           <Input
+            id="job-link"
             placeholder="https://www.linkedin.com/jobs/view/4012345678/"
             value={url}
             onChange={(event) => setUrl(event.target.value)}
           />
-          <Button
-            className="sm:w-40"
-            disabled={addJob.isPending || !url.trim()}
-            onClick={() => addJob.mutate()}
-          >
-            <Sparkles className="size-4" />
-            {addJob.isPending ? "Processing…" : "Process link"}
-          </Button>
         </div>
 
-        {needsText && (
-          <div className="mt-4 space-y-2">
-            <Label htmlFor="pasted-job">Job description</Label>
-            <Textarea
-              id="pasted-job"
-              rows={7}
-              placeholder="Copy the job description from LinkedIn and paste it here."
-              value={pastedText}
-              onChange={(event) => setPastedText(event.target.value)}
-            />
-          </div>
-        )}
+        <Button
+          className="mt-4 sm:w-48"
+          disabled={addJob.isPending || (pastedText.trim().length < 200 && !url.trim())}
+          onClick={() => addJob.mutate()}
+        >
+          <Sparkles className="size-4" />
+          {addJob.isPending ? "Processing…" : "Process job"}
+        </Button>
       </section>
 
       <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
