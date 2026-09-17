@@ -173,8 +173,8 @@ export const processJobLink = createServerFn({ method: "POST" })
       .insert({
         user_id: userId,
         url: data.url,
-        canonical_url: parsed.canonicalUrl,
-        linkedin_job_id: parsed.linkedinJobId,
+        canonical_url: canonicalUrl,
+        linkedin_job_id: linkedinJobId,
         title: parsedJob.title,
         company: parsedJob.company,
         location: parsedJob.location,
