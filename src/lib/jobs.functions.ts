@@ -82,26 +82,42 @@ async function fetchJobContent(canonicalUrl: string, jobId: string | null): Prom
   return "";
 }
 
+function textFingerprint(text: string): string {
+  let hash = 0;
+  const normalized = text.replace(/\s+/g, " ").trim().toLowerCase();
+  for (let i = 0; i < normalized.length; i += 1) {
+    hash = (hash * 31 + normalized.charCodeAt(i)) | 0;
+  }
+  return `pasted:${Math.abs(hash).toString(36)}-${normalized.length}`;
+}
+
 export const processJobLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { url: string; pastedText?: string | undefined }) => {
-    if (!input?.url?.trim()) throw new Error("Please paste a job link.");
-    return { url: input.url.trim(), pastedText: input.pastedText?.trim() ?? "" };
+  .inputValidator((input: { url?: string | undefined; pastedText?: string | undefined }) => {
+    const url = input?.url?.trim() ?? "";
+    const pastedText = input?.pastedText?.trim() ?? "";
+    if (!url && pastedText.length < 200) {
+      throw new Error("Paste the job description (or add a job link).");
+    }
+    return { url, pastedText };
   })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const parsed = parseJobLink(data.url);
-    if (!parsed) throw new Error("That doesn't look like a valid job link.");
+    const parsed = data.url ? parseJobLink(data.url) : null;
+    if (data.url && !parsed) throw new Error("That doesn't look like a valid job link.");
 
-    // 1. Duplicate check — same link or same LinkedIn job already saved.
+    const canonicalUrl = parsed ? parsed.canonicalUrl : textFingerprint(data.pastedText);
+    const linkedinJobId = parsed?.linkedinJobId ?? null;
+
+    // 1. Duplicate check — same link, same LinkedIn job, or same pasted description.
     const { data: existing } = await supabase
       .from("jobs")
       .select("*")
       .eq("user_id", userId)
       .or(
-        parsed.linkedinJobId
-          ? `canonical_url.eq.${parsed.canonicalUrl},linkedin_job_id.eq.${parsed.linkedinJobId}`
-          : `canonical_url.eq.${parsed.canonicalUrl}`,
+        linkedinJobId
+          ? `canonical_url.eq.${canonicalUrl},linkedin_job_id.eq.${linkedinJobId}`
+          : `canonical_url.eq.${canonicalUrl}`,
       )
       .limit(1)
       .maybeSingle();
@@ -112,11 +128,11 @@ export const processJobLink = createServerFn({ method: "POST" })
 
     // 2. Get the posting text.
     let sourceText = data.pastedText;
-    if (!sourceText) {
+    if (!sourceText && parsed) {
       sourceText = await fetchJobContent(parsed.canonicalUrl, parsed.linkedinJobId);
     }
     if (sourceText.length < 400) {
-      return { status: "needs_text" as const, canonicalUrl: parsed.canonicalUrl };
+      return { status: "needs_text" as const, canonicalUrl };
     }
 
     // 3. Primary resume for scoring.
