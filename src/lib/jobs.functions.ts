@@ -186,7 +186,7 @@ export const processJobLink = createServerFn({ method: "POST" })
         requirements: parsedJob.requirements?.slice(0, 15) ?? [],
         skills: parsedJob.skills?.slice(0, 25) ?? [],
         posted_at: parsedJob.posted_at,
-        source: parsed.isLinkedIn ? "linkedin" : "web",
+        source: parsed ? (parsed.isLinkedIn ? "linkedin" : "web") : "pasted",
         match_score: match ? Math.max(0, Math.min(100, Math.round(match.score))) : null,
         match_summary: match?.summary ?? null,
         strengths: match?.strengths?.slice(0, 6) ?? [],
