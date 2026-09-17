@@ -150,7 +150,7 @@ export const processJobLink = createServerFn({ method: "POST" })
     // 4. Parse the posting.
     const parsedJob = await aiJson<ParsedJob>({
       system: PARSE_SYSTEM,
-      content: `Job link: ${parsed.canonicalUrl}\n\nPosting text:\n${sourceText.slice(0, 20000)}`,
+      content: `Job link: ${parsed?.canonicalUrl ?? "not provided"}\n\nPosting text:\n${sourceText.slice(0, 20000)}`,
     });
 
     // 5. Score against the resume.
