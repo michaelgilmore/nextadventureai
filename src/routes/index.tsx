@@ -48,7 +48,7 @@ function Home() {
   const [url, setUrl] = useState("");
   const [pastedText, setPastedText] = useState("");
   const [needsText, setNeedsText] = useState(false);
-  const [sort, setSort] = useState<JobSort>("newest");
+  const [sort, setSort] = useState<JobSort>("score");
 
   const jobs = useQuery({
     queryKey: ["jobs", user?.id],

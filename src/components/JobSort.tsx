@@ -1,18 +1,20 @@
 import { cn } from "@/lib/utils";
 
-export type JobSort = "newest" | "score" | "location" | "title";
+export type JobSort = "newest" | "score" | "location" | "title" | "company";
 
 export const JOB_SORT_OPTIONS: { value: JobSort; label: string }[] = [
   { value: "newest", label: "Newest first" },
   { value: "score", label: "Score" },
   { value: "location", label: "Location" },
   { value: "title", label: "Job title" },
+  { value: "company", label: "Company" },
 ];
 
 type SortableJob = {
   match_score: number | null;
   location: string | null;
   title: string | null;
+  company: string | null;
   created_at: string;
 };
 
@@ -52,6 +54,16 @@ export function sortJobs<T extends SortableJob>(jobs: T[], sort: JobSort): T[] {
         if (titleA === null) return 1;
         if (titleB === null) return -1;
         return titleA.localeCompare(titleB);
+      });
+      break;
+    case "company":
+      sorted.sort((a, b) => {
+        const companyA = lastValue(a.company);
+        const companyB = lastValue(b.company);
+        if (companyA === null && companyB === null) return 0;
+        if (companyA === null) return 1;
+        if (companyB === null) return -1;
+        return companyA.localeCompare(companyB);
       });
       break;
     default:

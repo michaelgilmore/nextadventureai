@@ -39,7 +39,7 @@ function JobsList() {
   const { user, loading } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
-  const [sort, setSort] = useState<JobSort>("newest");
+  const [sort, setSort] = useState<JobSort>("score");
 
   const jobs = useQuery({
     queryKey: ["jobs", user?.id],
