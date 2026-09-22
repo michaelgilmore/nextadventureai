@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ExternalLink, Sparkles } from "lucide-react";
+import { ArrowRight, Compass, ExternalLink, Sparkles } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
 import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
@@ -94,21 +94,33 @@ function Home() {
 
   if (!user) {
     return (
-      <AppShell>
-        <section className="panel p-10 text-center">
-          <p className="text-sm uppercase tracking-[0.2em] text-primary">Job search, organized</p>
-          <h1 className="mx-auto mt-4 max-w-2xl text-4xl font-semibold sm:text-5xl">
-            Paste a job link. Get a <span className="text-gradient">match score</span> out of 100.
+      <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 text-center">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 size-[42rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-border/60"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute left-1/2 top-1/2 size-[30rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-border/40"
+        />
+        <div className="relative flex flex-col items-center">
+          <span className="grid size-14 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-glow">
+            <Compass className="size-7" />
+          </span>
+          <h1 className="text-gradient mt-8 font-display text-5xl font-bold tracking-tight sm:text-6xl">
+            NextAdventureAI
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            NextAdventureAI checks whether you've already seen the role, pulls out the details worth
-            remembering, and compares it to your resume.
+          <p className="mt-5 max-w-xl text-lg text-muted-foreground sm:text-xl">
+            Don't just find a job; search for an adventure.
           </p>
-          <Button asChild size="lg" className="mt-8">
-            <Link to="/auth">Get started free</Link>
+          <Button asChild size="lg" className="mt-10 px-10 text-base">
+            <Link to="/auth">
+              Let's Go!
+              <ArrowRight className="size-4" />
+            </Link>
           </Button>
-        </section>
-      </AppShell>
+        </div>
+      </div>
     );
   }
 
