@@ -259,7 +259,7 @@ export const rescoreJob = createServerFn({ method: "POST" })
       )}\n\nDescription:\n${(job.description ?? "").slice(0, 8000)}\n\nCANDIDATE RESUME\n${resume.content_text.slice(
         0,
         12000,
-      )}`,
+      )}${goalsBlock}`,
     });
 
     const { data: updated, error } = await supabase
