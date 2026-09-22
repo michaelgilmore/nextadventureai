@@ -32,7 +32,21 @@ Return ONLY JSON with these keys:
 const SCORE_SYSTEM = `You are a careful technical recruiter. Compare a candidate resume to a job posting.
 Return ONLY JSON: {"score":integer 0-100,"summary":string,"strengths":string[],"gaps":string[]}
 score: 0-100 fit, weighing required skills, years of experience, domain, seniority and location/work model.
+If CANDIDATE GOALS & PREFERENCES are provided, weigh them heavily: a role that conflicts with the candidate's stated goals, preferences or constraints must score lower, and one that matches them should score higher. Mention the relevant preference in strengths or gaps.
 summary: 2-3 sentences addressed to the candidate. strengths: max 6 short phrases. gaps: max 6 short phrases naming what is missing or weak. Be honest and specific; do not inflate the score.`;
+
+async function fetchGoals(
+  supabase: { from: (t: "profiles") => any },
+  userId: string,
+): Promise<string> {
+  const { data } = await supabase
+    .from("profiles")
+    .select("goals")
+    .eq("user_id", userId)
+    .maybeSingle();
+  const goals = (data?.goals ?? "").trim();
+  return goals ? `\n\nCANDIDATE GOALS & PREFERENCES\n${goals.slice(0, 4000)}` : "";
+}
 
 function stripHtml(html: string): string {
   return html
