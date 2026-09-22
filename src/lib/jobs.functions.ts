@@ -170,6 +170,7 @@ export const processJobLink = createServerFn({ method: "POST" })
     // 5. Score against the resume.
     let match: MatchResult | null = null;
     if (resume?.content_text) {
+      const goalsBlock = await fetchGoals(supabase, userId);
       match = await aiJson<MatchResult>({
         system: SCORE_SYSTEM,
         content: `JOB POSTING\nTitle: ${parsedJob.title ?? "unknown"}\nCompany: ${
