@@ -133,7 +133,30 @@ function ResumePage() {
         Your primary resume is the one every job posting gets scored against.
       </p>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-[1fr_1fr]">
+      <section className="panel mt-8 p-6">
+        <h2 className="text-lg font-semibold">Goals &amp; preferences</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Write a paragraph about what you're looking for — role, industry, salary, location, work
+          model, deal-breakers. Every job you add is scored with this in mind.
+        </p>
+        <Textarea
+          className="mt-4"
+          rows={5}
+          placeholder="I'm looking for a senior backend role at a product company, remote or hybrid in the Boston area, ideally in climate or health tech. I want to keep working in Python and avoid on-call heavy ops roles. Minimum $180k base."
+          value={goals}
+          onChange={(event) => setGoals(event.target.value)}
+        />
+        <div className="mt-3 flex items-center gap-3">
+          <Button disabled={goalsMutation.isPending} onClick={() => goalsMutation.mutate()}>
+            {goalsMutation.isPending ? "Saving…" : "Save"}
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Re-score a saved job from its page to apply changes.
+          </span>
+        </div>
+      </section>
+
+      <div className="mt-6 grid gap-6 md:grid-cols-[1fr_1fr]">
         <section className="panel p-6">
           <h2 className="text-lg font-semibold">Add a resume</h2>
           <div className="mt-4 space-y-4">
