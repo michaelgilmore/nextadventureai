@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { saveGoals } from "@/lib/profile.functions";
 import { saveResume, setPrimaryResume } from "@/lib/resumes.functions";
 
 export const Route = createFileRoute("/resume")({
@@ -42,6 +43,29 @@ function ResumePage() {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [pasted, setPasted] = useState("");
+  const [goals, setGoals] = useState("");
+  const [goalsLoaded, setGoalsLoaded] = useState(false);
+  const storeGoals = useServerFn(saveGoals);
+
+  useQuery({
+    queryKey: ["profile-goals", user?.id],
+    enabled: Boolean(user),
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("goals").maybeSingle();
+      if (error) throw error;
+      if (!goalsLoaded) {
+        setGoals(data?.goals ?? "");
+        setGoalsLoaded(true);
+      }
+      return data ?? { goals: "" };
+    },
+  });
+
+  const goalsMutation = useMutation({
+    mutationFn: async () => storeGoals({ data: { goals } }),
+    onSuccess: () => toast.success("Goals and preferences saved."),
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   const resumes = useQuery({
     queryKey: ["resumes", user?.id],
@@ -109,7 +133,30 @@ function ResumePage() {
         Your primary resume is the one every job posting gets scored against.
       </p>
 
-      <div className="mt-8 grid gap-6 md:grid-cols-[1fr_1fr]">
+      <section className="panel mt-8 p-6">
+        <h2 className="text-lg font-semibold">Goals &amp; preferences</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Write a paragraph about what you're looking for — role, industry, salary, location, work
+          model, deal-breakers. Every job you add is scored with this in mind.
+        </p>
+        <Textarea
+          className="mt-4"
+          rows={5}
+          placeholder="I'm looking for a senior backend role at a product company, remote or hybrid in the Boston area, ideally in climate or health tech. I want to keep working in Python and avoid on-call heavy ops roles. Minimum $180k base."
+          value={goals}
+          onChange={(event) => setGoals(event.target.value)}
+        />
+        <div className="mt-3 flex items-center gap-3">
+          <Button disabled={goalsMutation.isPending} onClick={() => goalsMutation.mutate()}>
+            {goalsMutation.isPending ? "Saving…" : "Save"}
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Re-score a saved job from its page to apply changes.
+          </span>
+        </div>
+      </section>
+
+      <div className="mt-6 grid gap-6 md:grid-cols-[1fr_1fr]">
         <section className="panel p-6">
           <h2 className="text-lg font-semibold">Add a resume</h2>
           <div className="mt-4 space-y-4">
