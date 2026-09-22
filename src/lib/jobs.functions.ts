@@ -249,6 +249,7 @@ export const rescoreJob = createServerFn({ method: "POST" })
     }
 
     const { aiJson } = await import("@/lib/ai.server");
+    const goalsBlock = await fetchGoals(supabase, userId);
     const match = await aiJson<MatchResult>({
       system: SCORE_SYSTEM,
       content: `JOB POSTING\nTitle: ${job.title ?? ""}\nCompany: ${job.company ?? ""}\nLocation: ${
