@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ExternalLink, Sparkles } from "lucide-react";
+import { ArrowRight, Compass, ExternalLink, Sparkles } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
 import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
