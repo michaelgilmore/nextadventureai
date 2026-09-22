@@ -43,6 +43,29 @@ function ResumePage() {
   const [title, setTitle] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [pasted, setPasted] = useState("");
+  const [goals, setGoals] = useState("");
+  const [goalsLoaded, setGoalsLoaded] = useState(false);
+  const storeGoals = useServerFn(saveGoals);
+
+  useQuery({
+    queryKey: ["profile-goals", user?.id],
+    enabled: Boolean(user),
+    queryFn: async () => {
+      const { data, error } = await supabase.from("profiles").select("goals").maybeSingle();
+      if (error) throw error;
+      if (!goalsLoaded) {
+        setGoals(data?.goals ?? "");
+        setGoalsLoaded(true);
+      }
+      return data ?? { goals: "" };
+    },
+  });
+
+  const goalsMutation = useMutation({
+    mutationFn: async () => storeGoals({ data: { goals } }),
+    onSuccess: () => toast.success("Goals and preferences saved."),
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   const resumes = useQuery({
     queryKey: ["resumes", user?.id],
