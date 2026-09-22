@@ -179,7 +179,7 @@ export const processJobLink = createServerFn({ method: "POST" })
           "; ",
         )}\nSkills: ${parsedJob.skills.join("; ")}\n\nDescription:\n${(
           parsedJob.description ?? sourceText
-        ).slice(0, 8000)}\n\nCANDIDATE RESUME\n${resume.content_text.slice(0, 12000)}`,
+        ).slice(0, 8000)}\n\nCANDIDATE RESUME\n${resume.content_text.slice(0, 12000)}${goalsBlock}`,
       });
     }
 
