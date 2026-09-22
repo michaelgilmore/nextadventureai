@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { saveGoals } from "@/lib/profile.functions";
 import { saveResume, setPrimaryResume } from "@/lib/resumes.functions";
 
 export const Route = createFileRoute("/resume")({
