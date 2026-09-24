@@ -3,7 +3,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Star, Trash2, Upload } from "lucide-react";
+import { Download, Star, Trash2, Upload } from "lucide-react";
+import { exportMyData } from "@/lib/export.functions";
 
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,40 @@ function ResumePage() {
   const storeGoals = useServerFn(saveGoals);
   const storeSeed = useServerFn(saveCoverLetterSeed);
   const [seed, setSeed] = useState("");
+  const doExport = useServerFn(exportMyData);
+  const [exporting, setExporting] = useState(false);
+
+  const runExport = async (kind: "json" | "csv") => {
+    setExporting(true);
+    try {
+      const data = await doExport();
+      const stamp = new Date().toISOString().slice(0, 10);
+      let blob: Blob;
+      let name: string;
+      if (kind === "json") {
+        blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        name = `nextadventureai-data-${stamp}.json`;
+      } else {
+        const cols = ["title", "company", "location", "workplace_type", "employment_type", "seniority", "salary", "status", "is_active", "match_score", "match_summary", "skills", "url", "created_at"] as const;
+        const esc = (v: unknown) => {
+          const s = Array.isArray(v) ? v.join("; ") : v == null ? "" : String(v);
+          return `"${s.replace(/"/g, '""')}"`;
+        };
+        const rows = data.jobs.map((j) => cols.map((c) => esc(j[c])).join(","));
+        blob = new Blob([[cols.join(","), ...rows].join("\n")], { type: "text/csv" });
+        name = `nextadventureai-jobs-${stamp}.csv`;
+      }
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setExporting(false);
+    }
+  };
 
   useQuery({
     queryKey: ["profile-goals", user?.id],
@@ -185,6 +220,21 @@ function ResumePage() {
         <Button className="mt-3" disabled={seedMutation.isPending} onClick={() => seedMutation.mutate()}>
           {seedMutation.isPending ? "Saving…" : "Save"}
         </Button>
+      </section>
+
+      <section className="panel mt-6 p-6">
+        <h2 className="text-lg font-semibold">Download your data</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Get a copy of your goals, seed info, resumes and saved jobs.
+        </p>
+        <div className="mt-3 flex gap-2">
+          <Button variant="outline" disabled={exporting} onClick={() => runExport("json")}>
+            <Download className="size-4" /> All data (JSON)
+          </Button>
+          <Button variant="outline" disabled={exporting} onClick={() => runExport("csv")}>
+            <Download className="size-4" /> Jobs (CSV)
+          </Button>
+        </div>
       </section>
 
       <div className="mt-6 grid gap-6 md:grid-cols-[1fr_1fr]">
