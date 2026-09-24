@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { saveCoverLetterSeed } from "@/lib/documents.functions";
 import { saveGoals } from "@/lib/profile.functions";
 import { saveResume, setPrimaryResume } from "@/lib/resumes.functions";
 
@@ -46,24 +47,36 @@ function ResumePage() {
   const [goals, setGoals] = useState("");
   const [goalsLoaded, setGoalsLoaded] = useState(false);
   const storeGoals = useServerFn(saveGoals);
+  const storeSeed = useServerFn(saveCoverLetterSeed);
+  const [seed, setSeed] = useState("");
 
   useQuery({
     queryKey: ["profile-goals", user?.id],
     enabled: Boolean(user),
     queryFn: async () => {
-      const { data, error } = await supabase.from("profiles").select("goals").maybeSingle();
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("goals, cover_letter_seed")
+        .maybeSingle();
       if (error) throw error;
       if (!goalsLoaded) {
         setGoals(data?.goals ?? "");
+        setSeed(data?.cover_letter_seed ?? "");
         setGoalsLoaded(true);
       }
-      return data ?? { goals: "" };
+      return data ?? { goals: "", cover_letter_seed: "" };
     },
   });
 
   const goalsMutation = useMutation({
     mutationFn: async () => storeGoals({ data: { goals } }),
     onSuccess: () => toast.success("Goals and preferences saved."),
+    onError: (error: Error) => toast.error(error.message),
+  });
+
+  const seedMutation = useMutation({
+    mutationFn: async () => storeSeed({ data: { seed } }),
+    onSuccess: () => toast.success("Cover letter seed info saved."),
     onError: (error: Error) => toast.error(error.message),
   });
 
@@ -154,6 +167,24 @@ function ResumePage() {
             Re-score a saved job from its page to apply changes.
           </span>
         </div>
+      </section>
+
+      <section className="panel mt-6 p-6">
+        <h2 className="text-lg font-semibold">Cover letter seed info</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Stories, achievements, motivations or phrases you'd like woven into generated cover
+          letters. You can turn this on or off each time you generate one.
+        </p>
+        <Textarea
+          className="mt-4"
+          rows={5}
+          placeholder="I led the migration that cut our cloud bill by 30%. I'm drawn to mission-driven teams because…"
+          value={seed}
+          onChange={(event) => setSeed(event.target.value)}
+        />
+        <Button className="mt-3" disabled={seedMutation.isPending} onClick={() => seedMutation.mutate()}>
+          {seedMutation.isPending ? "Saving…" : "Save"}
+        </Button>
       </section>
 
       <div className="mt-6 grid gap-6 md:grid-cols-[1fr_1fr]">
