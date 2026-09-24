@@ -8,6 +8,13 @@
       "when": 1790098813584,
       "tag": "0000_create_profiles_goals",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790251908053,
+      "tag": "0001_add_cover_letter_seed",
+      "breakpoints": true
     }
   ]
 }

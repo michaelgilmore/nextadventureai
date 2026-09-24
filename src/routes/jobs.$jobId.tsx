@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { ArrowLeft, ExternalLink, RefreshCw, Trash2 } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
+import { GenerateDocButtons } from "@/components/GenerateDocButtons";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -85,7 +86,15 @@ function JobDetail() {
       <section className="panel mt-4 flex flex-wrap items-start gap-6 p-6">
         <ScoreDial score={data.match_score} size={96} />
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl font-semibold">{data.title ?? "Untitled role"}</h1>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <h1 className="text-2xl font-semibold">{data.title ?? "Untitled role"}</h1>
+            <div className="flex flex-wrap gap-2">
+              <GenerateDocButtons
+                jobId={data.id}
+                fileBase={(data.company ?? "job").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}
+              />
+            </div>
+          </div>
           <p className="mt-1 text-muted-foreground">
             {[data.company, data.location, data.workplace_type, data.employment_type]
               .filter(Boolean)
