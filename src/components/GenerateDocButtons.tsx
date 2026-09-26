@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Copy, Download, FileText, Mail } from "lucide-react";
+import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
