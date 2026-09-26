@@ -34,11 +34,32 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
 
   const label = kind === "resume" ? "Custom resume" : "Custom cover letter";
 
-  const download = () => {
-    const blob = new Blob([text], { type: "text/plain" });
+  const download = async () => {
+    const paragraphs: Paragraph[] = [];
+    for (const raw of text.split("\n")) {
+      const line = raw.trim();
+      if (!line) {
+        paragraphs.push(new Paragraph({ text: "" }));
+        continue;
+      }
+      const isHeading =
+        line.length <= 60 && !line.endsWith(".") && line === line.toUpperCase() && /[A-Z]/.test(line);
+      paragraphs.push(
+        new Paragraph({
+          heading: isHeading ? HeadingLevel.HEADING_2 : undefined,
+          children: [new TextRun({ text: line, bold: isHeading })],
+        }),
+      );
+    }
+    const doc = new Document({
+      creator: "NextAdventureAI",
+      title: label,
+      sections: [{ children: paragraphs }],
+    });
+    const blob = await Packer.toBlob(doc);
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `${fileBase}-${kind === "resume" ? "resume" : "cover-letter"}.txt`;
+    a.download = `${fileBase}-${kind === "resume" ? "resume" : "cover-letter"}.docx`;
     a.click();
     URL.revokeObjectURL(a.href);
   };
