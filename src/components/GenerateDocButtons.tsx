@@ -46,7 +46,7 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
         line.length <= 60 && !line.endsWith(".") && line === line.toUpperCase() && /[A-Z]/.test(line);
       paragraphs.push(
         new Paragraph({
-          heading: isHeading ? HeadingLevel.HEADING_2 : undefined,
+          ...(isHeading ? { heading: HeadingLevel.HEADING_2 } : {}),
           children: [new TextRun({ text: line, bold: isHeading })],
         }),
       );
