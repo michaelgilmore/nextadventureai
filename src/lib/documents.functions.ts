@@ -41,6 +41,19 @@ export const generateDocument = createServerFn({ method: "POST" })
     if (data.kind === "cover_letter" && data.useSeed && profile?.cover_letter_seed)
       input += `\n\nCOVER LETTER SEED INFORMATION (weave in where relevant)\n${profile.cover_letter_seed}`;
 
+    const { data: examples } = await supabase
+      .from("sent_documents")
+      .select("content_text, job_id")
+      .eq("kind", data.kind)
+      .eq("include_in_future", true)
+      .neq("job_id", data.jobId)
+      .order("updated_at", { ascending: false })
+      .limit(3);
+    if (examples && examples.length > 0) {
+      input += `\n\nPREVIOUSLY SENT ${data.kind === "resume" ? "RESUMES" : "COVER LETTERS"} (the candidate's own edited versions for other jobs — match their voice, style and preferred phrasing; facts here are true and may be used)\n`;
+      input += examples.map((e, i) => `--- Example ${i + 1} ---\n${e.content_text.slice(0, 6000)}`).join("\n\n");
+    }
+
     const instructions =
       data.kind === "resume"
         ? "Rewrite the candidate's resume tailored to this job. Use only facts from the resume — never invent employers, dates, degrees or metrics. Reorder and rephrase to emphasize relevant experience and job keywords. Output clean plain text with clear section headings, no markdown symbols, no commentary."
