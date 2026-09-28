@@ -172,6 +172,50 @@ export type Database = {
         }
         Relationships: []
       }
+      sent_documents: {
+        Row: {
+          content_text: string
+          created_at: string
+          file_name: string | null
+          id: string
+          include_in_future: boolean
+          job_id: string
+          kind: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_text: string
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          include_in_future?: boolean
+          job_id: string
+          kind: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_text?: string
+          created_at?: string
+          file_name?: string | null
+          id?: string
+          include_in_future?: boolean
+          job_id?: string
+          kind?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sent_documents_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
