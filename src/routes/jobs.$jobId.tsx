@@ -6,6 +6,7 @@ import { ArrowLeft, ExternalLink, RefreshCw, Trash2 } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
 import { GenerateDocButtons } from "@/components/GenerateDocButtons";
+import { SentDocUploads } from "@/components/SentDocUploads";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -88,11 +89,14 @@ function JobDetail() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <h1 className="text-2xl font-semibold">{data.title ?? "Untitled role"}</h1>
-            <div className="flex flex-wrap gap-2">
-              <GenerateDocButtons
-                jobId={data.id}
-                fileBase={(data.company ?? "job").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}
-              />
+            <div className="flex flex-col items-end gap-3">
+              <div className="flex flex-wrap gap-2">
+                <GenerateDocButtons
+                  jobId={data.id}
+                  fileBase={(data.company ?? "job").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}
+                />
+              </div>
+              <SentDocUploads jobId={data.id} />
             </div>
           </div>
           <p className="mt-1 text-muted-foreground">

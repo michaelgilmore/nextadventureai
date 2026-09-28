@@ -15,6 +15,13 @@
       "when": 1790251908053,
       "tag": "0001_add_cover_letter_seed",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790634138172,
+      "tag": "0002_create_sent_documents",
+      "breakpoints": true
     }
   ]
 }
