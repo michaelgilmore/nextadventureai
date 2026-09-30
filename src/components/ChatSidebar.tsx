@@ -78,7 +78,10 @@ export function ChatSidebar({ activeId }: { activeId?: string }) {
               className="p-2 text-muted-foreground opacity-0 hover:text-destructive group-hover:opacity-100"
               onClick={async () => {
                 const { error } = await supabase.from("chat_threads").delete().eq("id", t.id);
-                if (error) return toast.error(error.message);
+                if (error) {
+                  toast.error(error.message);
+                  return;
+                }
                 queryClient.invalidateQueries({ queryKey: ["threads"] });
                 if (t.id === activeId) navigate({ to: "/chat" });
               }}

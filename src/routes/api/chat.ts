@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import { createOpenAI } from "@ai-sdk/openai";
-import { convertToModelMessages, isStepCount, streamText, tool, type UIMessage } from "ai";
+import { convertToModelMessages, isStepCount, streamText, tool, type Tool, type UIMessage } from "ai";
 import { z } from "zod";
 
-import type { Database } from "@/integrations/supabase/types";
+import type { Database, Json } from "@/integrations/supabase/types";
 import {
   createLovableAiGatewayRunIdFetch,
   getLovableAiGatewayRunId,
@@ -94,7 +94,7 @@ export const Route = createFileRoute("/api/chat")({
               return data ?? { error: "Job not found." };
             },
           }),
-          web_search: provider.tools.webSearch({}),
+          web_search: provider.tools.webSearch({}) as unknown as Tool,
         };
 
         const result = streamText({
@@ -125,7 +125,7 @@ export const Route = createFileRoute("/api/chat")({
             sendReasoning: true,
             onFinish: async ({ messages: finalMessages }) => {
               const update: Database["public"]["Tables"]["chat_threads"]["Update"] = {
-                messages: finalMessages as unknown as Database["public"]["Tables"]["chat_threads"]["Update"]["messages"],
+                messages: finalMessages as unknown as Json,
                 updated_at: new Date().toISOString(),
               };
               if (thread.title === "New chat" && firstText) update.title = firstText.slice(0, 60);
