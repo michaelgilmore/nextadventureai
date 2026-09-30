@@ -13,6 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResumeRouteImport } from './routes/resume'
 import { Route as SkillsRouteImport } from './routes/skills'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ChatIndexRouteImport } from './routes/chat.index'
+import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 import { Route as JobsIndexRouteImport } from './routes/jobs.index'
 import { Route as JobsJobIdRouteImport } from './routes/jobs.$jobId'
 
@@ -36,6 +39,21 @@ const SkillsRoute = SkillsRouteImport.update({
   path: '/skills',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatIndexRoute = ChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatThreadIdRoute = ChatThreadIdRouteImport.update({
+  id: '/chat/$threadId',
+  path: '/chat/$threadId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JobsIndexRoute = JobsIndexRouteImport.update({
   id: '/jobs/',
   path: '/jobs/',
@@ -52,7 +70,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/resume': typeof ResumeRoute
   '/skills': typeof SkillsRoute
+  '/api/chat': typeof ApiChatRoute
+  '/chat/$threadId': typeof ChatThreadIdRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
+  '/chat/': typeof ChatIndexRoute
   '/jobs/': typeof JobsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -60,7 +81,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/resume': typeof ResumeRoute
   '/skills': typeof SkillsRoute
+  '/api/chat': typeof ApiChatRoute
+  '/chat/$threadId': typeof ChatThreadIdRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
+  '/chat': typeof ChatIndexRoute
   '/jobs': typeof JobsIndexRoute
 }
 export interface FileRoutesById {
@@ -69,21 +93,45 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/resume': typeof ResumeRoute
   '/skills': typeof SkillsRoute
+  '/api/chat': typeof ApiChatRoute
+  '/chat/$threadId': typeof ChatThreadIdRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
+  '/chat/': typeof ChatIndexRoute
   '/jobs/': typeof JobsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/resume' | '/skills' | '/jobs/$jobId' | '/jobs/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/resume'
+    | '/skills'
+    | '/api/chat'
+    | '/chat/$threadId'
+    | '/jobs/$jobId'
+    | '/chat/'
+    | '/jobs/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/resume' | '/skills' | '/jobs/$jobId' | '/jobs'
+  to:
+    | '/'
+    | '/auth'
+    | '/resume'
+    | '/skills'
+    | '/api/chat'
+    | '/chat/$threadId'
+    | '/jobs/$jobId'
+    | '/chat'
+    | '/jobs'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/resume'
     | '/skills'
+    | '/api/chat'
+    | '/chat/$threadId'
     | '/jobs/$jobId'
+    | '/chat/'
     | '/jobs/'
   fileRoutesById: FileRoutesById
 }
@@ -92,7 +140,10 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ResumeRoute: typeof ResumeRoute
   SkillsRoute: typeof SkillsRoute
+  ApiChatRoute: typeof ApiChatRoute
+  ChatThreadIdRoute: typeof ChatThreadIdRoute
   JobsJobIdRoute: typeof JobsJobIdRoute
+  ChatIndexRoute: typeof ChatIndexRoute
   JobsIndexRoute: typeof JobsIndexRoute
 }
 
@@ -126,6 +177,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SkillsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/': {
+      id: '/chat/'
+      path: '/chat'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof ChatIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/$threadId': {
+      id: '/chat/$threadId'
+      path: '/chat/$threadId'
+      fullPath: '/chat/$threadId'
+      preLoaderRoute: typeof ChatThreadIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jobs/': {
       id: '/jobs/'
       path: '/jobs'
@@ -148,7 +220,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ResumeRoute: ResumeRoute,
   SkillsRoute: SkillsRoute,
+  ApiChatRoute: ApiChatRoute,
+  ChatThreadIdRoute: ChatThreadIdRoute,
   JobsJobIdRoute: JobsJobIdRoute,
+  ChatIndexRoute: ChatIndexRoute,
   JobsIndexRoute: JobsIndexRoute,
 }
 export const routeTree = rootRouteImport
