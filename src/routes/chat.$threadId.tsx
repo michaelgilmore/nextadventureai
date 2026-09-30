@@ -1,7 +1,7 @@
 import { useChat } from "@ai-sdk/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { DefaultChatTransport, isToolUIPart, type UIMessage } from "ai";
+import { DefaultChatTransport, isToolUIPart, type ToolUIPart, type UIMessage } from "ai";
 import { useMemo } from "react";
 import { toast } from "sonner";
 
@@ -148,8 +148,9 @@ function ChatWindow({ threadId, initialMessages }: { threadId: string; initialMe
                       return (
                         <Tool key={i} defaultOpen={false}>
                           <ToolHeader
-                            type={part.type}
-                            state={part.state}
+                            {...(part.type === "dynamic-tool"
+                              ? { type: part.type, state: part.state, toolName: part.toolName }
+                              : { type: part.type as ToolUIPart["type"], state: part.state })}
                             title={TOOL_TITLES[name] ?? name}
                           />
                           <ToolContent>
