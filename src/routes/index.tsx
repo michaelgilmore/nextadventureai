@@ -80,7 +80,9 @@ function Home() {
         return;
       }
       toast.success(
-        result.scored ? "Job saved and scored." : "Job saved. Add a resume to get a match score.",
+        result.scored && result.job.match_score !== null
+          ? `Job saved. Match score: ${result.job.match_score}/100.`
+          : "Job saved. Add a resume to get a match score.",
       );
       setUrl("");
       setPastedText("");
