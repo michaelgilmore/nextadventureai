@@ -64,9 +64,18 @@ function Home() {
   });
   const sortedJobs = sortJobs(jobs.data ?? [], sort);
 
+  const [similar, setSimilar] = useState<
+    { title: string | null; company: string | null; created_at: string } | null
+  >(null);
+
   const addJob = useMutation({
-    mutationFn: () => process({ data: { url, pastedText: pastedText || undefined } }),
+    mutationFn: (confirmSimilar: boolean = false) =>
+      process({ data: { url, pastedText: pastedText || undefined, confirmSimilar } }),
     onSuccess: (result) => {
+      if (result.status === "similar") {
+        setSimilar(result.existing);
+        return;
+      }
       if (result.status === "duplicate") {
         toast.info("You've already saved this job.");
         setUrl("");

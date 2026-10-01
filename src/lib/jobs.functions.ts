@@ -107,14 +107,20 @@ function textFingerprint(text: string): string {
 
 export const processJobLink = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { url?: string | undefined; pastedText?: string | undefined }) => {
-    const url = input?.url?.trim() ?? "";
-    const pastedText = input?.pastedText?.trim() ?? "";
-    if (!url && pastedText.length < 200) {
-      throw new Error("Paste the job description (or add a job link).");
-    }
-    return { url, pastedText };
-  })
+  .inputValidator(
+    (input: {
+      url?: string | undefined;
+      pastedText?: string | undefined;
+      confirmSimilar?: boolean | undefined;
+    }) => {
+      const url = input?.url?.trim() ?? "";
+      const pastedText = input?.pastedText?.trim() ?? "";
+      if (!url && pastedText.length < 200) {
+        throw new Error("Paste the job description (or add a job link).");
+      }
+      return { url, pastedText, confirmSimilar: Boolean(input?.confirmSimilar) };
+    },
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     const parsed = data.url ? parseJobLink(data.url) : null;
@@ -166,6 +172,22 @@ export const processJobLink = createServerFn({ method: "POST" })
       system: PARSE_SYSTEM,
       content: `Job link: ${parsed?.canonicalUrl ?? "not provided"}\n\nPosting text:\n${sourceText.slice(0, 20000)}`,
     });
+
+    // 4b. Same title + company already saved? Ask the user before continuing.
+    if (!data.confirmSimilar && parsedJob.title && parsedJob.company) {
+      const { data: similar } = await supabase
+        .from("jobs")
+        .select("id, title, company, created_at")
+        .eq("user_id", userId)
+        .ilike("title", parsedJob.title.replace(/[%_]/g, "\\$&"))
+        .ilike("company", parsedJob.company.replace(/[%_]/g, "\\$&"))
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (similar) {
+        return { status: "similar" as const, existing: similar };
+      }
+    }
 
     // 5. Score against the resume.
     let match: MatchResult | null = null;
