@@ -7,6 +7,16 @@ import { ArrowRight, Compass, ExternalLink, Sparkles } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
 import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,9 +74,18 @@ function Home() {
   });
   const sortedJobs = sortJobs(jobs.data ?? [], sort);
 
+  const [similar, setSimilar] = useState<
+    { title: string | null; company: string | null; created_at: string } | null
+  >(null);
+
   const addJob = useMutation({
-    mutationFn: () => process({ data: { url, pastedText: pastedText || undefined } }),
+    mutationFn: (confirmSimilar: boolean = false) =>
+      process({ data: { url, pastedText: pastedText || undefined, confirmSimilar } }),
     onSuccess: (result) => {
+      if (result.status === "similar") {
+        setSimilar(result.existing);
+        return;
+      }
       if (result.status === "duplicate") {
         toast.info("You've already saved this job.");
         setUrl("");
@@ -163,7 +182,7 @@ function Home() {
         <Button
           className="mt-4 sm:w-48"
           disabled={addJob.isPending || (pastedText.trim().length < 200 && !url.trim())}
-          onClick={() => addJob.mutate()}
+          onClick={() => addJob.mutate(false)}
         >
           <Sparkles className="size-4" />
           {addJob.isPending ? "Processing…" : "Process job"}
@@ -237,6 +256,31 @@ function Home() {
           </div>
         ))}
       </div>
+      <AlertDialog open={Boolean(similar)} onOpenChange={(o) => !o && setSimilar(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>This job may already be saved</AlertDialogTitle>
+            <AlertDialogDescription>
+              You already have "{similar?.title}" at {similar?.company}
+              {similar?.created_at
+                ? `, added on ${new Date(similar.created_at).toLocaleDateString(undefined, { dateStyle: "long" })}`
+                : ""}
+              . Do you want to add this job anyway?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Don't add</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setSimilar(null);
+                addJob.mutate(true);
+              }}
+            >
+              Add anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
