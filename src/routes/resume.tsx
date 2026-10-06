@@ -31,6 +31,8 @@ export const Route = createFileRoute("/resume")({
         property: "og:description",
         content: "Upload the resume NextAdventureAI uses to score each job posting out of 100.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ResumePage,

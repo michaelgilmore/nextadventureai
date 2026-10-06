@@ -27,6 +27,8 @@ export const Route = createFileRoute("/jobs/$jobId")({
         property: "og:description",
         content: "Parsed job details with an AI match score against your resume.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: JobDetail,
@@ -93,7 +95,9 @@ function JobDetail() {
               <div className="flex flex-wrap gap-2">
                 <GenerateDocButtons
                   jobId={data.id}
-                  fileBase={(data.company ?? "job").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}
+                  fileBase={`Michael-Gilmore-${[data.company ?? "Company", data.title ?? "Position"]
+                    .map((value) => value.trim().replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "") || "Unknown")
+                    .join("-")}`}
                 />
               </div>
               <SentDocUploads jobId={data.id} />

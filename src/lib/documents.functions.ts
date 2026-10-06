@@ -56,8 +56,8 @@ export const generateDocument = createServerFn({ method: "POST" })
 
     const instructions =
       data.kind === "resume"
-        ? "Rewrite the candidate's resume tailored to this job. Use only facts from the resume — never invent employers, dates, degrees or metrics. Reorder and rephrase to emphasize relevant experience and job keywords. Output clean plain text with clear section headings, no markdown symbols, no commentary."
-        : "Write a concise, warm, specific cover letter (250-400 words) for this job using only facts from the resume and seed information. Never invent experience. Output plain text only, starting with the greeting, no commentary.";
+        ? "Rewrite the candidate's resume tailored to this job. Start with the candidate's name and complete contact information header copied verbatim from the CANDIDATE RESUME, preserving its line breaks and order. Never omit or invent contact information. Use only facts from the resume — never invent employers, dates, degrees or metrics. Reorder and rephrase to emphasize relevant experience and job keywords. Output clean plain text with clear section headings, no markdown symbols, no commentary."
+        : "Write a concise, warm, specific cover letter (250-400 words in the letter body) for this job using only facts from the resume and seed information. Start with the candidate's name and complete contact information header copied verbatim from the CANDIDATE RESUME, preserving its line breaks and order, exactly as in a generated resume. Never omit or invent contact information and do not use contact details from previous examples. Follow the header with a blank line, then the greeting and letter body. Never invent experience. Output plain text only, no commentary.";
 
     const text = await aiText({ instructions, input });
     return { text };
