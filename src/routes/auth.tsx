@@ -24,6 +24,8 @@ export const Route = createFileRoute("/auth")({
         property: "og:description",
         content: "Sign in to track job posts and see how well each one matches your resume.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,
