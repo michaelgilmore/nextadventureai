@@ -62,8 +62,13 @@ export const generateDocument = createServerFn({ method: "POST" })
     const layoutInstructions = data.kind === "resume"
       ? " Format for a professional resume of no more than two US Letter pages: aim for 650-850 words total, maximum 900 including the contact header. Follow the contact header with a blank line. Use short uppercase section headings on their own lines, compact job/employer/date lines, and concise achievement bullets beginning with '- '. Prioritize relevant achievements, compress older roles, and avoid repetitive summaries and excessive sections. Do not use tables, columns, tab spacing, markdown emphasis, or page-break markers. Do not invent facts or discard essential employment dates and qualifications to fill a word quota."
       : " Format for a professional one-page US Letter cover letter: keep the letter body to 250-320 words and the entire document under 400 words including the header. Separate the greeting, each of 3-4 compact body paragraphs, the closing, and the signature with blank lines. Use no subject heading, bullet lists, markdown, or extra blank lines. Keep the contact header identical to the primary resume; never fabricate dates or recipient addresses.";
-    const text = await aiText({ instructions: instructions + layoutInstructions, input });
-    return { text };
+    const { prepareApplicationDocument } = await import("./document-preparation.server");
+    return prepareApplicationDocument({
+      kind: data.kind,
+      instructions: instructions + layoutInstructions,
+      input,
+      generateText: aiText,
+    });
   });
 
 export const saveCoverLetterSeed = createServerFn({ method: "POST" })
