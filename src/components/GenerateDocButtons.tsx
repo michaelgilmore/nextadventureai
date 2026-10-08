@@ -20,27 +20,37 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
   const [kind, setKind] = useState<Kind | null>(null);
   const [useSeed, setUseSeed] = useState(true);
   const [text, setText] = useState("");
+  const [prepared, setPrepared] = useState<{ text: string; blob: Blob } | null>(null);
   const [downloading, setDownloading] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (k: Kind) => generate({ data: { jobId, kind: k, useSeed } }),
-    onSuccess: (res) => setText(res.text),
+    onMutate: () => { setText(""); setPrepared(null); },
+    onSuccess: (res) => {
+      const bytes = Uint8Array.from(atob(res.docxBase64), (character) => character.charCodeAt(0));
+      const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+      setPrepared({ text: res.text, blob });
+      setText(res.text);
+    },
     onError: (e: Error) => toast.error(e.message),
   });
 
   const open = (k: Kind) => {
     setKind(k);
     setText("");
+    setPrepared(null);
     if (k === "resume") mutation.mutate(k);
   };
 
   const label = kind === "resume" ? "Custom resume" : "Custom cover letter";
 
   const download = async () => {
-    if (!kind || downloading) return;
+    if (!kind || downloading || mutation.isPending) return;
     setDownloading(true);
     try {
-      const blob = await Packer.toBlob(buildApplicationDocument(text, kind));
+      const blob = prepared?.text === text
+        ? prepared.blob
+        : await Packer.toBlob(buildApplicationDocument(text, kind));
       const a = document.createElement("a");
       const url = URL.createObjectURL(blob);
       a.href = url;
@@ -56,10 +66,10 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
 
   return (
     <>
-      <Button size="sm" onClick={() => open("resume")}>
+      <Button size="sm" disabled={mutation.isPending} onClick={() => open("resume")}>
         <FileText className="size-3" /> Custom resume
       </Button>
-      <Button size="sm" onClick={() => open("cover_letter")}>
+      <Button size="sm" disabled={mutation.isPending} onClick={() => open("cover_letter")}>
         <Mail className="size-3" /> Custom cover letter
       </Button>
 
@@ -80,7 +90,7 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
             </div>
           )}
           {mutation.isPending ? (
-            <p className="py-10 text-center text-muted-foreground">Writing… this can take up to a minute.</p>
+            <p className="py-10 text-center text-muted-foreground">Writing and checking page length…</p>
           ) : text ? (
             <>
               <Textarea rows={18} value={text} onChange={(e) => setText(e.target.value)} />
@@ -96,7 +106,7 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
                   <Copy className="size-3" /> Copy
                 </Button>
                 <Button size="sm" variant="secondary" disabled={downloading} onClick={download}>
-                  <Download className="size-3" /> {downloading ? "Preparing…" : "Download"}
+                  <Download className="size-3" /> {downloading ? "Preparing…" : "Download DOCX"}
                 </Button>
                 {kind === "resume" && (
                   <Button size="sm" variant="ghost" onClick={() => mutation.mutate("resume")}>

@@ -56,7 +56,14 @@ function lineCount(text: string, font: number, width: number) {
   return lines;
 }
 
-export function buildApplicationDocument(text: string, kind: DocumentKind) {
+export class DocumentLengthError extends Error {
+  constructor(kind: DocumentKind) {
+    super(`This ${kind === "cover_letter" ? "cover letter is too long for one page" : "resume is too long for two pages"}. Shorten the text or regenerate before downloading; no content has been removed.`);
+    this.name = "DocumentLengthError";
+  }
+}
+
+export function getApplicationLayout(text: string, kind: DocumentKind) {
   if (!text.trim()) throw new Error("Generate a document before downloading.");
   const { header, blocks } = parse(text, kind);
   const letter = kind === "cover_letter";
@@ -81,8 +88,12 @@ export function buildApplicationDocument(text: string, kind: DocumentKind) {
     }
     if (best) { chosen = { font, split: best.split }; break; }
   }
-  if (!chosen) throw new Error(`This ${letter ? "cover letter is too long for one page" : "resume is too long for two pages"}. Shorten the text or regenerate before downloading; no content has been removed.`);
-  const { font, split } = chosen;
+  if (!chosen) throw new DocumentLengthError(kind);
+  return { header, blocks, letter, margin, ...chosen };
+}
+
+export function buildApplicationDocument(text: string, kind: DocumentKind) {
+  const { header, blocks, letter, margin, font, split } = getApplicationLayout(text, kind);
   const name = header[0] ?? "";
   const headerParagraphs = () => header.map((line, i) => new Paragraph({
     alignment: AlignmentType.CENTER,
