@@ -73,10 +73,10 @@ export function buildApplicationDocument(text: string, kind: DocumentKind) {
     let before = 0, best: { split: number; difference: number } | undefined;
     for (let i = 1; i < blocks.length; i++) {
       before += heights[i - 1] ?? 0;
-      if (blocks[i - 1]?.kind === "heading" || blocks[i - 1]?.kind === "role" || blocks[i]?.kind === "bullet") continue; // Keep role headings and their achievements together.
+      if (blocks[i - 1]?.kind === "heading" || blocks[i - 1]?.kind === "role") continue; // Never orphan section or role headings.
       const after = total - before;
       if (headerHeight + before > capacity || headerHeight + after > capacity) continue;
-      const difference = Math.abs(before - after) + (blocks[i]?.kind === "heading" ? 0 : 35);
+      const difference = Math.abs(before - after) + (blocks[i]?.kind === "bullet" ? 150 : blocks[i]?.kind === "heading" ? 0 : 35);
       if (!best || difference < best.difference) best = { split: i, difference };
     }
     if (best) { chosen = { font, split: best.split }; break; }
