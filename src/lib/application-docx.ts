@@ -4,7 +4,7 @@ import {
 } from "docx";
 
 export type DocumentKind = "resume" | "cover_letter";
-type Block = { text: string; kind: "body" | "heading" | "bullet" };
+type Block = { text: string; kind: "body" | "heading" | "bullet" | "role" };
 const sectionNames = /^(professional summary|summary|profile|objective|professional experience|work experience|experience|employment history|education|skills|technical skills|core competencies|certifications|projects|awards|volunteer experience|additional information|publications|professional development)$/i;
 
 function parse(text: string, kind: DocumentKind) {
@@ -25,14 +25,18 @@ function parse(text: string, kind: DocumentKind) {
     const clean = line.replace(/^#{1,6}\s+/, "").replace(/\*\*/g, "");
     const bullet = /^[-•*]\s+/.test(clean);
     const heading = kind === "resume" && !bullet && (sectionNames.test(clean.replace(/:$/, "")) || (clean.length <= 60 && clean === clean.toUpperCase() && /[A-Z]/.test(clean)));
-    blocks.push({ text: bullet ? clean.replace(/^[-•*]\s+/, "") : clean, kind: bullet ? "bullet" : heading ? "heading" : "body" });
+    const role = kind === "resume" && !heading && !bullet && /\b(?:19|20)\d{2}\b|\bpresent\b/i.test(clean);
+    blocks.push({ text: bullet ? clean.replace(/^[-•*]\s+/, "") : clean, kind: bullet ? "bullet" : heading ? "heading" : role ? "role" : "body" });
   }
   // In a letter, hard line wrapping within a paragraph is not a paragraph break.
   if (kind === "cover_letter") {
     const paragraphs: Block[] = [];
     let group: string[] = [];
     const flush = () => { if (group.length) paragraphs.push({ text: group.join(" "), kind: "body" }); group = []; };
-    for (const block of blocks) { if (!block.text) flush(); else group.push(block.text); }
+    for (const block of blocks) {
+      if (!block.text) flush();
+      else { if (/^(sincerely|best regards|kind regards|regards|respectfully|yours truly)[,!]?$/i.test(group[group.length - 1] ?? "")) flush(); group.push(block.text); }
+    }
     flush();
     return { header, blocks: paragraphs };
   }
@@ -69,7 +73,7 @@ export function buildApplicationDocument(text: string, kind: DocumentKind) {
     let before = 0, best: { split: number; difference: number } | undefined;
     for (let i = 1; i < blocks.length; i++) {
       before += heights[i - 1] ?? 0;
-      if (blocks[i - 1]?.kind === "heading") continue; // Never orphan a section heading.
+      if (blocks[i - 1]?.kind === "heading" || blocks[i - 1]?.kind === "role" || blocks[i]?.kind === "bullet") continue; // Keep role headings and their achievements together.
       const after = total - before;
       if (headerHeight + before > capacity || headerHeight + after > capacity) continue;
       const difference = Math.abs(before - after) + (blocks[i]?.kind === "heading" ? 0 : 35);
@@ -90,11 +94,11 @@ export function buildApplicationDocument(text: string, kind: DocumentKind) {
   const paragraph = (block: Block) => new Paragraph({
     ...(block.kind === "heading" ? { heading: HeadingLevel.HEADING_2 } : {}),
     ...(block.kind === "bullet" ? { numbering: { reference: "resume-bullets", level: 0 } } : {}),
-    keepNext: block.kind === "heading",
+    keepNext: block.kind === "heading" || block.kind === "role",
     keepLines: true,
     widowControl: true,
     spacing: { before: block.kind === "heading" ? 140 : 0, after: block.kind === "heading" ? 60 : letter ? 180 : 80, line: Math.round(font * 24) },
-    children: [new TextRun({ text: block.text, bold: block.kind === "heading", size: block.kind === "heading" ? 22 : font * 2 })],
+    children: [new TextRun({ text: block.text, bold: block.kind === "heading" || block.kind === "role", size: block.kind === "heading" ? 22 : font * 2 })],
   });
   const children: Paragraph[] = [...headerParagraphs(), ...blocks.slice(0, split).map(paragraph)];
   if (split < blocks.length) {
