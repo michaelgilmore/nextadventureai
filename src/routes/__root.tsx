@@ -76,7 +76,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <Button
             onClick={() => {
-              if (/Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk .* failed/.test(error.message)) {
+              if (/Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk .* failed/.test(error instanceof Error ? error.message : String(error))) {
                 window.location.reload();
                 return;
               }
