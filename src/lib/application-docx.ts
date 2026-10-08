@@ -92,6 +92,7 @@ export function buildApplicationDocument(text: string, kind: DocumentKind) {
     ...(block.kind === "bullet" ? { numbering: { reference: "resume-bullets", level: 0 } } : {}),
     keepNext: block.kind === "heading",
     keepLines: true,
+    widowControl: true,
     spacing: { before: block.kind === "heading" ? 140 : 0, after: block.kind === "heading" ? 60 : letter ? 180 : 80, line: Math.round(font * 24) },
     children: [new TextRun({ text: block.text, bold: block.kind === "heading", size: block.kind === "heading" ? 22 : font * 2 })],
   });
@@ -103,7 +104,7 @@ export function buildApplicationDocument(text: string, kind: DocumentKind) {
   return new Document({
     creator: "NextAdventureAI", title: letter ? "Custom cover letter" : "Custom resume",
     styles: {
-      default: { document: { run: { font: "Arial", size: font * 2, color: "000000" }, paragraph: { widowControl: true } } },
+      default: { document: { run: { font: "Arial", size: font * 2, color: "000000" } } },
       paragraphStyles: [{ id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true, run: { font: "Arial", size: 22, bold: true, color: "000000" }, paragraph: { outlineLevel: 1 } }],
     },
     numbering: { config: [{ reference: "resume-bullets", levels: [{ level: 0, format: LevelFormat.BULLET, text: "•", alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 240, hanging: 180 } } } }] }] },
