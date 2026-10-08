@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Copy, Download, FileText, Mail } from "lucide-react";
-import { Document, HeadingLevel, Packer, Paragraph, TextRun } from "docx";
+import { Packer } from "docx";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { generateDocument } from "@/lib/documents.functions";
+import { buildApplicationDocument } from "@/lib/application-docx";
 
 type Kind = "resume" | "cover_letter";
 
@@ -19,6 +20,7 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
   const [kind, setKind] = useState<Kind | null>(null);
   const [useSeed, setUseSeed] = useState(true);
   const [text, setText] = useState("");
+  const [downloading, setDownloading] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (k: Kind) => generate({ data: { jobId, kind: k, useSeed } }),
@@ -35,33 +37,21 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
   const label = kind === "resume" ? "Custom resume" : "Custom cover letter";
 
   const download = async () => {
-    const paragraphs: Paragraph[] = [];
-    for (const raw of text.split("\n")) {
-      const line = raw.trim();
-      if (!line) {
-        paragraphs.push(new Paragraph({ text: "" }));
-        continue;
-      }
-      const isHeading =
-        line.length <= 60 && !line.endsWith(".") && line === line.toUpperCase() && /[A-Z]/.test(line);
-      paragraphs.push(
-        new Paragraph({
-          ...(isHeading ? { heading: HeadingLevel.HEADING_2 } : {}),
-          children: [new TextRun({ text: line, bold: isHeading })],
-        }),
-      );
+    if (!kind || downloading) return;
+    setDownloading(true);
+    try {
+      const blob = await Packer.toBlob(buildApplicationDocument(text, kind));
+      const a = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.download = `${fileBase}-${kind === "resume" ? "resume" : "cover-letter"}.docx`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not download the document.");
+    } finally {
+      setDownloading(false);
     }
-    const doc = new Document({
-      creator: "NextAdventureAI",
-      title: label,
-      sections: [{ children: paragraphs }],
-    });
-    const blob = await Packer.toBlob(doc);
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${fileBase}-${kind === "resume" ? "resume" : "cover-letter"}.docx`;
-    a.click();
-    URL.revokeObjectURL(a.href);
   };
 
   return (
@@ -105,8 +95,8 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
                 >
                   <Copy className="size-3" /> Copy
                 </Button>
-                <Button size="sm" variant="secondary" onClick={download}>
-                  <Download className="size-3" /> Download
+                <Button size="sm" variant="secondary" disabled={downloading} onClick={download}>
+                  <Download className="size-3" /> {downloading ? "Preparing…" : "Download"}
                 </Button>
                 {kind === "resume" && (
                   <Button size="sm" variant="ghost" onClick={() => mutation.mutate("resume")}>

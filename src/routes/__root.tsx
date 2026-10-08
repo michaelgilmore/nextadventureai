@@ -14,6 +14,26 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+
+// Runs before module loading, so it can recover even when the route bundle is stale.
+const recoverStaleBundle = `(() => {
+  const recover = (event) => {
+    const error = event.payload || event.reason;
+    const message = String(error && error.message || error || '');
+    if (event.type !== 'vite:preloadError' && !/Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk .* failed/.test(message)) return;
+    try {
+      const key = 'nextadventure:chunk-reload';
+      const last = Number(sessionStorage.getItem(key) || 0);
+      if (Date.now() - last < 60000) return;
+      sessionStorage.setItem(key, String(Date.now()));
+    } catch { return; }
+    event.preventDefault();
+    window.location.reload();
+  };
+  window.addEventListener('vite:preloadError', recover);
+  window.addEventListener('unhandledrejection', recover);
+})();`;
 
 function NotFoundComponent() {
   return (
@@ -54,15 +74,18 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
           Something went wrong on our end. You can try refreshing or head back home.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
+          <Button
             onClick={() => {
+              if (/Failed to fetch dynamically imported module|Importing a module script failed|Loading chunk .* failed/.test(error instanceof Error ? error.message : String(error))) {
+                window.location.reload();
+                return;
+              }
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Try again
-          </button>
+          </Button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
@@ -119,6 +142,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: recoverStaleBundle }} />
         <HeadContent />
       </head>
       <body>
