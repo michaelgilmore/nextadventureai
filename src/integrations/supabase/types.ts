@@ -87,6 +87,7 @@ export type Database = {
           gaps: string[]
           id: string
           is_active: boolean
+          is_flagged: boolean
           linkedin_job_id: string | null
           location: string | null
           match_score: number | null
@@ -116,6 +117,7 @@ export type Database = {
           gaps?: string[]
           id?: string
           is_active?: boolean
+          is_flagged?: boolean
           linkedin_job_id?: string | null
           location?: string | null
           match_score?: number | null
@@ -145,6 +147,7 @@ export type Database = {
           gaps?: string[]
           id?: string
           is_active?: boolean
+          is_flagged?: boolean
           linkedin_job_id?: string | null
           location?: string | null
           match_score?: number | null

@@ -1,0 +1,2 @@
+ALTER TABLE public.jobs ADD COLUMN is_flagged boolean NOT NULL DEFAULT false;
+COMMENT ON COLUMN public.jobs.is_flagged IS 'User-set flag; jobs flagged with this can be filtered on the add-job and jobs screens.';
