@@ -115,7 +115,9 @@ function JobsList() {
       <div className="mt-6 space-y-3">
         {visible.length === 0 && (
           <div className="panel p-8 text-center text-sm text-muted-foreground">
-            No jobs here yet. Process a job link on the home page.
+            {all.length === 0
+              ? "No jobs here yet. Process a job link on the home page."
+              : "No jobs match these filters."}
           </div>
         )}
 
