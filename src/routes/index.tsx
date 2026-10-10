@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ArrowRight, Compass, ExternalLink, Sparkles } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
+import { FlaggedOnlyToggle, JobFlagButton } from "@/components/JobFlag";
 import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
 import {
   AlertDialog,
@@ -59,6 +60,7 @@ function Home() {
   const [pastedText, setPastedText] = useState("");
   const [needsText, setNeedsText] = useState(false);
   const [sort, setSort] = useState<JobSort>("score");
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
 
   const jobs = useQuery({
     queryKey: ["jobs", user?.id],
