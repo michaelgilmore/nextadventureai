@@ -173,6 +173,29 @@ export const processJobLink = createServerFn({ method: "POST" })
       content: `Job link: ${parsed?.canonicalUrl ?? "not provided"}\n\nPosting text:\n${sourceText.slice(0, 20000)}`,
     });
 
+    // 4a. Company review: rating 0 blocks the job; rating 2 is preferred.
+    let companyNote = "";
+    if (parsedJob.company) {
+      const { data: review } = await supabase
+        .from("companies")
+        .select("name, description, rating")
+        .eq("user_id", userId)
+        .ilike("name", parsedJob.company.trim().replace(/[%_]/g, "\\$&"))
+        .limit(1)
+        .maybeSingle();
+      if (review?.rating === 0) {
+        return {
+          status: "blocked_company" as const,
+          company: { name: review.name, description: review.description },
+        };
+      }
+      if (review?.rating === 2) {
+        companyNote = `\n\nCOMPANY PREFERENCE\nThe candidate marked ${review.name} as a FAVORITE company. Give this role meaningful preference in the score.${
+          review.description ? ` Candidate's notes: ${review.description.slice(0, 1500)}` : ""
+        }`;
+      }
+    }
+
     // 4b. Same title + company already saved? Ask the user before continuing.
     if (!data.confirmSimilar && parsedJob.title && parsedJob.company) {
       const { data: similar } = await supabase
@@ -201,7 +224,7 @@ export const processJobLink = createServerFn({ method: "POST" })
           "; ",
         )}\nSkills: ${parsedJob.skills.join("; ")}\n\nDescription:\n${(
           parsedJob.description ?? sourceText
-        ).slice(0, 8000)}\n\nCANDIDATE RESUME\n${resume.content_text.slice(0, 12000)}${goalsBlock}`,
+        ).slice(0, 8000)}\n\nCANDIDATE RESUME\n${resume.content_text.slice(0, 12000)}${goalsBlock}${companyNote}`,
       });
     }
 

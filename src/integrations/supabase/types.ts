@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      companies: {
+        Row: {
+          company_size: string
+          created_at: string
+          description: string
+          id: string
+          name: string
+          office_location: string
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_size?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name: string
+          office_location?: string
+          rating?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_size?: string
+          created_at?: string
+          description?: string
+          id?: string
+          name?: string
+          office_location?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           canonical_url: string
