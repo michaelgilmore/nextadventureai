@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
+import { FlaggedOnlyToggle, JobFlagButton } from "@/components/JobFlag";
 import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ function JobsList() {
   const { user, loading } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
   const [sort, setSort] = useState<JobSort>("score");
 
   const jobs = useQuery({
