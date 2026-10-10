@@ -77,11 +77,16 @@ function Home() {
   const [similar, setSimilar] = useState<
     { title: string | null; company: string | null; created_at: string } | null
   >(null);
+  const [blocked, setBlocked] = useState<{ name: string; description: string } | null>(null);
 
   const addJob = useMutation({
     mutationFn: (confirmSimilar: boolean = false) =>
       process({ data: { url, pastedText: pastedText || undefined, confirmSimilar } }),
     onSuccess: (result) => {
+      if (result.status === "blocked_company") {
+        setBlocked(result.company);
+        return;
+      }
       if (result.status === "similar") {
         setSimilar(result.existing);
         return;
@@ -278,6 +283,19 @@ function Home() {
             >
               Add anyway
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={Boolean(blocked)} onOpenChange={(o) => !o && setBlocked(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Job not added — {blocked?.name} is rated 0</AlertDialogTitle>
+            <AlertDialogDescription className="whitespace-pre-wrap">
+              {blocked?.description || "You marked this company as one not to consider."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setBlocked(null)}>OK</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
