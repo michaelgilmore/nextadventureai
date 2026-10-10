@@ -103,7 +103,7 @@ function SkillStats() {
           <p className="font-display text-3xl font-semibold">{active.length}</p>
         </div>
         <div className="panel p-5">
-          <p className="text-sm text-muted-foreground">Distinct skills</p>
+          <p className="text-sm text-muted-foreground">Skills shown</p>
           <p className="font-display text-3xl font-semibold">{ranked.length}</p>
         </div>
         <div className="panel p-5">
@@ -116,7 +116,11 @@ function SkillStats() {
         <h2 className="text-lg font-semibold">Skills across your active jobs</h2>
         {ranked.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">
-            No skills yet — save and process a job posting to start building statistics.
+            {hidden > 0
+              ? `No skill has been asked for ${MIN_SKILL_COUNT} times yet — ${hidden} ${
+                  hidden === 1 ? "skill is" : "skills are"
+                } still waiting for more jobs to request them.`
+              : "No skills yet — save and process a job posting to start building statistics."}
           </p>
         ) : (
           <ul className="mt-5 space-y-3">
@@ -136,6 +140,14 @@ function SkillStats() {
               </li>
             ))}
           </ul>
+        )}
+        {hidden > 0 && ranked.length > 0 && (
+          <p className="mt-5 border-t border-border pt-4 text-sm text-muted-foreground">
+            {hidden} {hidden === 1 ? "skill that appears" : "skills that appear"} only once or
+            twice {hidden === 1 ? "is" : "are"} hidden — {hidden === 1 ? "it" : "they"}{" "}
+            {hidden === 1 ? "stays" : "stay"} saved and {hidden === 1 ? "appears" : "appear"} here
+            once {MIN_SKILL_COUNT} jobs ask for {hidden === 1 ? "it" : "them"}.
+          </p>
         )}
       </section>
     </AppShell>
