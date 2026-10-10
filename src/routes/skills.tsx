@@ -77,9 +77,10 @@ function SkillStats() {
     }
   }
 
-  const ranked = [...counts.values()].sort(
-    (a, b) => b.count - a.count || a.label.localeCompare(b.label),
-  );
+  const ranked = [...counts.values()]
+    .filter((skill) => skill.count >= MIN_SKILL_COUNT)
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  const hidden = [...counts.values()].filter((skill) => skill.count < MIN_SKILL_COUNT).length;
   const max = ranked[0]?.count ?? 1;
 
   return (
