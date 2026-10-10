@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ArrowRight, Compass, ExternalLink, Sparkles } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
+import { FlaggedOnlyToggle, JobFlagButton } from "@/components/JobFlag";
 import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
 import {
   AlertDialog,
@@ -59,6 +60,7 @@ function Home() {
   const [pastedText, setPastedText] = useState("");
   const [needsText, setNeedsText] = useState(false);
   const [sort, setSort] = useState<JobSort>("score");
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
 
   const jobs = useQuery({
     queryKey: ["jobs", user?.id],
@@ -72,7 +74,10 @@ function Home() {
       return data;
     },
   });
-  const sortedJobs = sortJobs(jobs.data ?? [], sort);
+  const sortedJobs = sortJobs(
+    (jobs.data ?? []).filter((job) => !flaggedOnly || job.is_flagged),
+    sort,
+  );
 
   const [similar, setSimilar] = useState<
     { title: string | null; company: string | null; created_at: string } | null
@@ -198,6 +203,7 @@ function Home() {
         <h2 className="text-xl font-semibold">Your pipeline</h2>
         <div className="flex items-center gap-4">
           <JobSortSelect value={sort} onChange={setSort} />
+          <FlaggedOnlyToggle flaggedOnly={flaggedOnly} onChange={setFlaggedOnly} />
           <span className="text-sm text-muted-foreground">{jobs.data?.length ?? 0} saved</span>
         </div>
       </div>
@@ -212,6 +218,7 @@ function Home() {
         {sortedJobs.map((job) => (
           <div key={job.id} className="panel flex items-center gap-5 p-5">
             <ScoreDial score={job.match_score} />
+            <JobFlagButton jobId={job.id} flagged={job.is_flagged} />
             <div className="min-w-0 flex-1">
               <Link
                 to="/jobs/$jobId"

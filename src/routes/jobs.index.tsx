@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
+import { FlaggedOnlyToggle, JobFlagButton } from "@/components/JobFlag";
 import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ function JobsList() {
   const { user, loading } = useAuth();
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("all");
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
   const [sort, setSort] = useState<JobSort>("score");
 
   const jobs = useQuery({
@@ -73,8 +75,10 @@ function JobsList() {
 
   const all = jobs.data ?? [];
   const visible = sortJobs(
-    all.filter((job) =>
-      filter === "all" ? true : filter === "active" ? job.is_active : !job.is_active,
+    all.filter(
+      (job) =>
+        (filter === "all" ? true : filter === "active" ? job.is_active : !job.is_active) &&
+        (!flaggedOnly || job.is_flagged),
     ),
     sort,
   );
@@ -91,6 +95,7 @@ function JobsList() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <JobSortSelect value={sort} onChange={setSort} />
+          <FlaggedOnlyToggle flaggedOnly={flaggedOnly} onChange={setFlaggedOnly} />
           <div className="flex gap-1 rounded-lg border border-border/70 p-1">
             {FILTERS.map((option) => (
               <Button
@@ -110,7 +115,9 @@ function JobsList() {
       <div className="mt-6 space-y-3">
         {visible.length === 0 && (
           <div className="panel p-8 text-center text-sm text-muted-foreground">
-            No jobs here yet. Process a job link on the home page.
+            {all.length === 0
+              ? "No jobs here yet. Process a job link on the home page."
+              : "No jobs match these filters."}
           </div>
         )}
 
@@ -120,6 +127,7 @@ function JobsList() {
             className={`panel flex items-center gap-5 p-5 ${job.is_active ? "" : "opacity-60"}`}
           >
             <ScoreDial score={job.match_score} />
+            <JobFlagButton jobId={job.id} flagged={job.is_flagged} />
             <div className="min-w-0 flex-1">
               <Link
                 to="/jobs/$jobId"
