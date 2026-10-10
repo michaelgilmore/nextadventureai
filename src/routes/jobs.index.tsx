@@ -75,8 +75,10 @@ function JobsList() {
 
   const all = jobs.data ?? [];
   const visible = sortJobs(
-    all.filter((job) =>
-      filter === "all" ? true : filter === "active" ? job.is_active : !job.is_active,
+    all.filter(
+      (job) =>
+        (filter === "all" ? true : filter === "active" ? job.is_active : !job.is_active) &&
+        (!flaggedOnly || job.is_flagged),
     ),
     sort,
   );
@@ -93,6 +95,7 @@ function JobsList() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <JobSortSelect value={sort} onChange={setSort} />
+          <FlaggedOnlyToggle flaggedOnly={flaggedOnly} onChange={setFlaggedOnly} />
           <div className="flex gap-1 rounded-lg border border-border/70 p-1">
             {FILTERS.map((option) => (
               <Button
@@ -122,6 +125,7 @@ function JobsList() {
             className={`panel flex items-center gap-5 p-5 ${job.is_active ? "" : "opacity-60"}`}
           >
             <ScoreDial score={job.match_score} />
+            <JobFlagButton jobId={job.id} flagged={job.is_flagged} />
             <div className="min-w-0 flex-1">
               <Link
                 to="/jobs/$jobId"
