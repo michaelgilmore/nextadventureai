@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Trash2 } from "lucide-react";
+import { ExternalLink, Pencil, Trash2, X } from "lucide-react";
 
-import { AppShell } from "@/components/AppShell";
+import { AppShell, ScoreDial } from "@/components/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,12 +19,14 @@ export const Route = createFileRoute("/companies")({
       { title: "Company reviews — NextAdventureAI" },
       {
         name: "description",
-        content: "Review companies, note their size and offices, and rate them to steer your job search.",
+        content:
+          "Review companies, note their size and offices, and rate them to steer your job search.",
       },
       { property: "og:title", content: "Company reviews — NextAdventureAI" },
       {
         property: "og:description",
-        content: "Rate companies as favorites or ones to avoid so job postings are filtered and scored accordingly.",
+        content:
+          "Rate companies as favorites or ones to avoid so job postings are filtered and scored accordingly.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -57,10 +59,14 @@ const EMPTY: Form = {
   rating: 1,
 };
 
+/** Company names are matched ignoring case and surrounding spaces. */
+const norm = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
+
 function CompaniesPage() {
   const { user, loading } = useAuth();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<Form>(EMPTY);
+  const [selected, setSelected] = useState<{ id: string; name: string } | null>(null);
 
   const companies = useQuery({
     queryKey: ["companies", user?.id],
@@ -75,6 +81,33 @@ function CompaniesPage() {
       return data;
     },
   });
+
+  // Job postings are matched to companies by name, so they can be listed per company
+  // and counted on each row without a per-company request.
+  const postings = useQuery({
+    queryKey: ["companyPostings", user?.id],
+    enabled: Boolean(user),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("jobs")
+        .select(
+          "id, title, company, location, workplace_type, status, match_score, is_active, created_at, url",
+        )
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const counts = new Map<string, number>();
+  for (const job of postings.data ?? []) {
+    const key = norm(job.company);
+    if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+
+  const companyJobs = selected
+    ? (postings.data ?? []).filter((job) => norm(job.company) === norm(selected.name))
+    : [];
 
   const save = useMutation({
     mutationFn: async () => {
@@ -99,6 +132,7 @@ function CompaniesPage() {
     onSuccess: () => {
       toast.success(form.id ? "Company updated." : "Company added.");
       setForm(EMPTY);
+      setSelected(null);
       queryClient.invalidateQueries({ queryKey: ["companies"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -108,6 +142,14 @@ function CompaniesPage() {
   if (!user) return <AppShell>Sign in to review companies.</AppShell>;
 
   const set = (patch: Partial<Form>) => setForm((f) => ({ ...f, ...patch }));
+
+  const openCompany = (company: { id: string; name: string }) => {
+    const row = companies.data?.find((c) => c.id === company.id);
+    if (!row) return;
+    setForm({ ...row });
+    setSelected({ id: row.id, name: row.name });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <AppShell>
@@ -170,65 +212,170 @@ function CompaniesPage() {
             {save.isPending ? "Saving…" : form.id ? "Save changes" : "Add company"}
           </Button>
           {form.id && (
-            <Button variant="ghost" onClick={() => setForm(EMPTY)}>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setForm(EMPTY);
+                setSelected(null);
+              }}
+            >
               Cancel
             </Button>
           )}
         </div>
       </section>
 
+      {selected && (
+        <section className="panel mt-10 p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-xl font-semibold">
+                Jobs at <span className="font-display">{selected.name}</span>
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {companyJobs.length} saved {companyJobs.length === 1 ? "posting" : "postings"} from
+                this company.
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Close company jobs"
+              onClick={() => setSelected(null)}
+            >
+              <X className="size-4" />
+              Close
+            </Button>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {companyJobs.length === 0 && (
+              <div className="panel p-8 text-center text-sm text-muted-foreground">
+                No job postings saved for {selected.name} yet.
+              </div>
+            )}
+            {companyJobs.map((job) => (
+              <div
+                key={job.id}
+                className={`panel flex items-center gap-4 p-4 ${job.is_active ? "" : "opacity-60"}`}
+              >
+                <ScoreDial score={job.match_score} />
+                <div className="min-w-0 flex-1">
+                  <Link
+                    to="/jobs/$jobId"
+                    params={{ jobId: job.id }}
+                    className="font-display text-base font-semibold hover:text-primary"
+                  >
+                    {job.title ?? "Untitled role"}
+                  </Link>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {[job.location, job.workplace_type].filter(Boolean).join(" · ")}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Added {new Date(job.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-2">
+                  <Badge variant="secondary" className="capitalize">
+                    {job.status}
+                  </Badge>
+                  <a
+                    href={job.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    Open posting <ExternalLink className="size-3" />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <h2 className="mt-10 text-xl font-semibold">Your companies</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Select a company to edit it and see the jobs you've saved from it.
+      </p>
       <div className="mt-4 space-y-3">
         {companies.data?.length === 0 && (
           <div className="panel p-8 text-center text-sm text-muted-foreground">
             No companies reviewed yet.
           </div>
         )}
-        {companies.data?.map((c) => (
-          <div key={c.id} className="panel p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-display text-lg font-semibold">{c.name}</span>
-                  <Badge variant={c.rating === 0 ? "destructive" : c.rating === 2 ? "default" : "secondary"}>
-                    {c.rating === 0 ? "Avoid" : c.rating === 2 ? "Favorite" : "Neutral"} · {c.rating}
-                  </Badge>
+        {companies.data?.map((c) => {
+          const jobCount = counts.get(norm(c.name)) ?? 0;
+          const isOpen = selected?.id === c.id;
+          return (
+            <div
+              key={c.id}
+              role="button"
+              tabIndex={0}
+              aria-label={`Edit ${c.name} and see its ${jobCount} saved jobs`}
+              onClick={() => openCompany(c)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  openCompany(c);
+                }
+              }}
+              className={`panel cursor-pointer p-5 transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 ${
+                isOpen ? "border-primary/60" : ""
+              }`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-display text-lg font-semibold">{c.name}</span>
+                    <Badge
+                      variant={
+                        c.rating === 0 ? "destructive" : c.rating === 2 ? "default" : "secondary"
+                      }
+                    >
+                      {c.rating === 0 ? "Avoid" : c.rating === 2 ? "Favorite" : "Neutral"} ·{" "}
+                      {c.rating}
+                    </Badge>
+                    <Badge variant="outline">
+                      {jobCount} {jobCount === 1 ? "job" : "jobs"}
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {[c.office_location, c.company_size].filter(Boolean).join(" · ")}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  {[c.office_location, c.company_size].filter(Boolean).join(" · ")}
-                </p>
+                <div className="flex shrink-0 gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Edit"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openCompany(c);
+                    }}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Delete"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (!confirm(`Delete ${c.name}?`)) return;
+                      await supabase.from("companies").delete().eq("id", c.id);
+                      if (selected?.id === c.id) setSelected(null);
+                      queryClient.invalidateQueries({ queryKey: ["companies"] });
+                    }}
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex shrink-0 gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Edit"
-                  onClick={() => {
-                    setForm({ ...c });
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                >
-                  <Pencil className="size-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Delete"
-                  onClick={async () => {
-                    if (!confirm(`Delete ${c.name}?`)) return;
-                    await supabase.from("companies").delete().eq("id", c.id);
-                    queryClient.invalidateQueries({ queryKey: ["companies"] });
-                  }}
-                >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
+              {c.description && <p className="mt-3 whitespace-pre-wrap text-sm">{c.description}</p>}
             </div>
-            {c.description && (
-              <p className="mt-3 whitespace-pre-wrap text-sm">{c.description}</p>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
     </AppShell>
   );
