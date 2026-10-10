@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
+const MIN_SKILL_COUNT = 3;
+
 export const Route = createFileRoute("/skills")({
   head: () => ({
     meta: [
