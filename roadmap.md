@@ -1,5 +1,13 @@
 # Document formatting
 
+# Work experience
+
+- [x] Add private company-by-company work experience storage and a Resume section with add, edit, and delete controls.
+- [x] Include work experience in the full data export.
+- [ ] Verify saving, editing, reloading, and deleting work experience while signed in.
+
+# Document formatting
+
 - [x] Check and automatically adjust generated document length before presenting results.
 - [x] Prepare downloadable DOCX files before showing generated text.
 - [x] Verify length adjustment and download readiness with a live AI revision, LibreOffice page counts, and DOCX validation.

@@ -13,3 +13,4 @@
 - Keep DOCX layout in a shared browser-safe application-document formatter with explicit page geometry, semantic paragraphs, conservative overflow checks, and no silent truncation, so both downloads remain editable and consistently paginated.
 - Prepare application documents in an authenticated server-side pipeline that validates the shared layout, performs bounded content revisions on overflow, and returns a packed DOCX alongside the final text, so displayed generations are already downloadable.
 - Install bounded stale-module recovery before client scripts in the root shell and reload on chunk-error retries, so outdated deployment assets do not strand users on a blank screen or create reload loops.
+- Store employment details in owner-scoped work-experience records separate from company reviews, with authenticated mutations and inclusion in the full data export, so career history stays private and independent of job-search ratings.

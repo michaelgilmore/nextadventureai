@@ -43,6 +43,13 @@
       "when": 1791665933452,
       "tag": "0005_add_is_flagged_to_jobs",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791760185444,
+      "tag": "0006_create_work_experience",
+      "breakpoints": true
     }
   ]
 }
