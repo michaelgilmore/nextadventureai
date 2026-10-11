@@ -19,12 +19,13 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
   const generate = useServerFn(generateDocument);
   const [kind, setKind] = useState<Kind | null>(null);
   const [useSeed, setUseSeed] = useState(true);
+  const [extraInfo, setExtraInfo] = useState("");
   const [text, setText] = useState("");
   const [prepared, setPrepared] = useState<{ text: string; blob: Blob } | null>(null);
   const [downloading, setDownloading] = useState(false);
 
   const mutation = useMutation({
-    mutationFn: (k: Kind) => generate({ data: { jobId, kind: k, useSeed } }),
+    mutationFn: (k: Kind) => generate({ data: { jobId, kind: k, useSeed, extraInfo } }),
     onMutate: () => { setText(""); setPrepared(null); },
     onSuccess: (res) => {
       const bytes = Uint8Array.from(atob(res.docxBase64), (character) => character.charCodeAt(0));
@@ -79,14 +80,26 @@ export function GenerateDocButtons({ jobId, fileBase }: { jobId: string; fileBas
             <DialogTitle>{label}</DialogTitle>
           </DialogHeader>
           {kind === "cover_letter" && (
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Checkbox id="seed" checked={useSeed} onCheckedChange={(v) => setUseSeed(v === true)} />
-                <Label htmlFor="seed">Use my cover letter seed info</Label>
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Checkbox id="seed" checked={useSeed} onCheckedChange={(v) => setUseSeed(v === true)} />
+                  <Label htmlFor="seed">Use my cover letter seed info</Label>
+                </div>
+                <Button size="sm" disabled={mutation.isPending} onClick={() => mutation.mutate("cover_letter")}>
+                  {text ? "Regenerate" : "Generate"}
+                </Button>
               </div>
-              <Button size="sm" disabled={mutation.isPending} onClick={() => mutation.mutate("cover_letter")}>
-                {text ? "Regenerate" : "Generate"}
-              </Button>
+              <div className="space-y-1">
+                <Label htmlFor="extra-info">Extra info for this letter (optional)</Label>
+                <Textarea
+                  id="extra-info"
+                  rows={3}
+                  placeholder="Anything specific to include — e.g. why this role excites you, a connection at the company, a recent project."
+                  value={extraInfo}
+                  onChange={(e) => setExtraInfo(e.target.value)}
+                />
+              </div>
             </div>
           )}
           {mutation.isPending ? (
