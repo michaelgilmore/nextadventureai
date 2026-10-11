@@ -3,7 +3,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { aiText } from "./ai-text.server";
 
-type Input = { jobId: string; kind: "resume" | "cover_letter"; useSeed: boolean };
+type Input = { jobId: string; kind: "resume" | "cover_letter"; useSeed: boolean; extraInfo?: string };
 
 export const generateDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -11,6 +11,7 @@ export const generateDocument = createServerFn({ method: "POST" })
     jobId: String(input.jobId),
     kind: input.kind === "cover_letter" ? ("cover_letter" as const) : ("resume" as const),
     useSeed: Boolean(input.useSeed),
+    extraInfo: typeof input.extraInfo === "string" ? input.extraInfo.slice(0, 4000) : "",
   }))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
@@ -40,6 +41,8 @@ export const generateDocument = createServerFn({ method: "POST" })
     if (profile?.goals) input += `\n\nCANDIDATE GOALS\n${profile.goals}`;
     if (data.kind === "cover_letter" && data.useSeed && profile?.cover_letter_seed)
       input += `\n\nCOVER LETTER SEED INFORMATION (weave in where relevant)\n${profile.cover_letter_seed}`;
+    if (data.kind === "cover_letter" && data.extraInfo.trim())
+      input += `\n\nADDITIONAL INFORMATION FOR THIS COVER LETTER (include where relevant; treat as true facts about the candidate or their interest in this role)\n${data.extraInfo.trim()}`;
 
     const { data: examples } = await supabase
       .from("sent_documents")
