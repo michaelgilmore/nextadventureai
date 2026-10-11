@@ -8,6 +8,7 @@ import { ArrowRight, Compass, ExternalLink, Sparkles } from "lucide-react";
 import { AppShell, ScoreDial } from "@/components/AppShell";
 import { FlaggedOnlyToggle, JobFlagButton } from "@/components/JobFlag";
 import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
+import { JobStatusSelect } from "@/components/JobStatus";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,7 +50,6 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const STATUSES = ["saved", "applied", "interviewing", "offer", "rejected"] as const;
 
 function Home() {
   const { user, loading } = useAuth();
@@ -239,23 +239,7 @@ function Home() {
               </div>
             </div>
             <div className="hidden shrink-0 flex-col items-end gap-2 sm:flex">
-              <select
-                className="rounded-md border border-input bg-secondary px-2 py-1 text-sm capitalize"
-                value={job.status}
-                onChange={async (event) => {
-                  await supabase
-                    .from("jobs")
-                    .update({ status: event.target.value })
-                    .eq("id", job.id);
-                  queryClient.invalidateQueries({ queryKey: ["jobs"] });
-                }}
-              >
-                {STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
+              <JobStatusSelect jobId={job.id} value={job.status} invalidateKeys={[["jobs"]]} />
               <a
                 href={job.url}
                 target="_blank"
