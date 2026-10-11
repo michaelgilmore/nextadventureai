@@ -4,8 +4,18 @@ import { Flag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
-export function JobFlagButton({ jobId, flagged }: { jobId: string; flagged: boolean }) {
+export function JobFlagButton({
+  jobId,
+  flagged,
+  invalidateKeys,
+}: {
+  jobId: string;
+  flagged: boolean;
+  /** Query keys to invalidate after the update; defaults to [["jobs"]]. */
+  invalidateKeys?: string[][];
+}) {
   const queryClient = useQueryClient();
+  const keys = invalidateKeys ?? [["jobs"]];
 
   return (
     <button
@@ -24,7 +34,7 @@ export function JobFlagButton({ jobId, flagged }: { jobId: string; flagged: bool
           .from("jobs")
           .update({ is_flagged: !flagged })
           .eq("id", jobId);
-        queryClient.invalidateQueries({ queryKey: ["jobs"] });
+        for (const key of keys) queryClient.invalidateQueries({ queryKey: key });
       }}
     >
       <Flag className={cn("size-4", flagged && "fill-current")} />
