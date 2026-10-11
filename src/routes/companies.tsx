@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { ExternalLink, Pencil, Trash2, X } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
+import { statusLabel } from "@/components/JobStatus";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
