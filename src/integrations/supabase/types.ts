@@ -282,6 +282,45 @@ export type Database = {
           },
         ]
       }
+      work_experience: {
+        Row: {
+          additional_details: string
+          company_name: string
+          created_at: string
+          id: string
+          role_title: string
+          software_tools: string
+          team_structure: string
+          technologies: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_details?: string
+          company_name: string
+          created_at?: string
+          id?: string
+          role_title?: string
+          software_tools?: string
+          team_structure?: string
+          technologies?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_details?: string
+          company_name?: string
+          created_at?: string
+          id?: string
+          role_title?: string
+          software_tools?: string
+          team_structure?: string
+          technologies?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
