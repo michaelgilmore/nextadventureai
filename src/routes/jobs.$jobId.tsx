@@ -6,6 +6,8 @@ import { ArrowLeft, ExternalLink, RefreshCw, Trash2 } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
 import { GenerateDocButtons } from "@/components/GenerateDocButtons";
+import { JobFlagButton } from "@/components/JobFlag";
+import { JobStatusSelect } from "@/components/JobStatus";
 import { SentDocUploads } from "@/components/SentDocUploads";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -109,7 +111,17 @@ function JobDetail() {
               .join(" · ")}
           </p>
           {data.salary && <p className="mt-1 text-sm text-primary">{data.salary}</p>}
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <JobFlagButton
+              jobId={data.id}
+              flagged={data.is_flagged}
+              invalidateKeys={[["job", jobId], ["jobs"]]}
+            />
+            <JobStatusSelect
+              jobId={data.id}
+              value={data.status}
+              invalidateKeys={[["job", jobId], ["jobs"]]}
+            />
             <Button size="sm" variant="secondary" asChild>
               <a href={data.url} target="_blank" rel="noreferrer">
                 Open posting <ExternalLink className="size-3" />

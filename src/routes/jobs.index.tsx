@@ -6,6 +6,7 @@ import { useState } from "react";
 import { AppShell, ScoreDial } from "@/components/AppShell";
 import { FlaggedOnlyToggle, JobFlagButton } from "@/components/JobFlag";
 import { JobSortSelect, sortJobs, type JobSort } from "@/components/JobSort";
+import { JobStatusSelect } from "@/components/JobStatus";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -33,7 +34,6 @@ export const Route = createFileRoute("/jobs/")({
   component: JobsList,
 });
 
-const STATUSES = ["saved", "applied", "interviewing", "offer", "rejected"] as const;
 const FILTERS = ["all", "active", "inactive"] as const;
 
 function JobsList() {
@@ -158,23 +158,7 @@ function JobsList() {
                   }}
                 />
               </label>
-              <select
-                className="rounded-md border border-input bg-secondary px-2 py-1 text-sm capitalize"
-                value={job.status}
-                onChange={async (event) => {
-                  await supabase
-                    .from("jobs")
-                    .update({ status: event.target.value })
-                    .eq("id", job.id);
-                  queryClient.invalidateQueries({ queryKey: ["jobs"] });
-                }}
-              >
-                {STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
+              <JobStatusSelect jobId={job.id} value={job.status} invalidateKeys={[["jobs"]]} />
               <a
                 href={job.url}
                 target="_blank"
