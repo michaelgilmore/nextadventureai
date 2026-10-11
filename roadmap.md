@@ -1,10 +1,8 @@
-# Document formatting
-
 # Work experience
 
 - [x] Add private company-by-company work experience storage and a Resume section with add, edit, and delete controls.
 - [x] Include work experience in the full data export.
-- [ ] Verify saving, editing, reloading, and deleting work experience while signed in.
+- [x] Verify saving, editing, reloading, exporting, and deleting work experience while signed in.
 
 # Document formatting
 
