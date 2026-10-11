@@ -7,6 +7,7 @@ import { Download, Star, Trash2, Upload } from "lucide-react";
 import { exportMyData } from "@/lib/export.functions";
 
 import { AppShell } from "@/components/AppShell";
+import { WorkExperienceSection } from "@/components/WorkExperienceSection";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -138,7 +139,7 @@ function ResumePage() {
         const buffer = await file.arrayBuffer();
         let binary = "";
         const bytes = new Uint8Array(buffer);
-        for (let i = 0; i < bytes.length; i += 1) binary += String.fromCharCode(bytes[i]!);
+        for (const byte of bytes) binary += String.fromCharCode(byte);
         base64 = btoa(binary);
       }
       return upload({
@@ -182,6 +183,8 @@ function ResumePage() {
       <p className="mt-2 max-w-xl text-muted-foreground">
         Your primary resume is the one every job posting gets scored against.
       </p>
+
+      <WorkExperienceSection userId={user.id} />
 
       <section className="panel mt-8 p-6">
         <h2 className="text-lg font-semibold">Goals &amp; preferences</h2>
