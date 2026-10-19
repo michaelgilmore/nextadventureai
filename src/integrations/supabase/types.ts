@@ -282,6 +282,74 @@ export type Database = {
           },
         ]
       }
+      skill_level_history: {
+        Row: {
+          id: string
+          level: number
+          recorded_at: string
+          skill_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          level: number
+          recorded_at?: string
+          skill_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          level?: number
+          recorded_at?: string
+          skill_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "skill_level_history_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "user_skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          improvement_plan: string
+          label: string
+          level: number
+          skill_key: string
+          target_level: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          improvement_plan?: string
+          label: string
+          level?: number
+          skill_key: string
+          target_level?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          improvement_plan?: string
+          label?: string
+          level?: number
+          skill_key?: string
+          target_level?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       work_experience: {
         Row: {
           additional_details: string

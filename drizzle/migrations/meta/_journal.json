@@ -50,6 +50,13 @@
       "when": 1791760185444,
       "tag": "0006_create_work_experience",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1792445334816,
+      "tag": "0007_create_user_skills",
+      "breakpoints": true
     }
   ]
 }
