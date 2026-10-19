@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 
 import { AppShell } from "@/components/AppShell";
+import { LEVEL_LABELS, LevelDots, SkillEditor, useUserSkills } from "@/components/SkillLevels";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -31,6 +34,10 @@ export const Route = createFileRoute("/skills")({
 
 function SkillStats() {
   const { user, loading } = useAuth();
+  const mine = useUserSkills(user?.id);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [newSkill, setNewSkill] = useState("");
+  const [customLabel, setCustomLabel] = useState("");
 
   const jobs = useQuery({
     queryKey: ["jobs", user?.id],
@@ -85,6 +92,12 @@ function SkillStats() {
   const hidden = [...counts.values()].filter((skill) => skill.count < MIN_SKILL_COUNT).length;
   const max = ranked[0]?.count ?? 1;
 
+  const mySkills = mine.data?.skills ?? [];
+  const mineByKey = new Map(mySkills.map((s) => [s.skill_key, s]));
+  const historyFor = (id: string | undefined) =>
+    id ? (mine.data?.history ?? []).filter((h) => h.skill_id === id) : [];
+  const atTarget = mySkills.filter((s) => s.level >= s.target_level).length;
+
   return (
     <AppShell>
       <h1 className="text-2xl font-semibold">Skill statistics</h1>
@@ -97,7 +110,7 @@ function SkillStats() {
         to leave it out.
       </p>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-4">
         <div className="panel p-5">
           <p className="text-sm text-muted-foreground">Active jobs</p>
           <p className="font-display text-3xl font-semibold">{active.length}</p>
@@ -110,7 +123,82 @@ function SkillStats() {
           <p className="text-sm text-muted-foreground">Most requested</p>
           <p className="font-display text-2xl font-semibold">{ranked[0]?.label ?? "—"}</p>
         </div>
+        <div className="panel p-5">
+          <p className="text-sm text-muted-foreground">Skills at target</p>
+          <p className="font-display text-3xl font-semibold">
+            {atTarget}/{mySkills.length}
+          </p>
+        </div>
       </div>
+
+      <section className="panel mt-6 p-6">
+        <h2 className="text-lg font-semibold">My skill levels</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Rate yourself 0–5 on any skill below. Filled dots are your level, outlined dots show the
+          gap to your target. Every change is recorded so you can see your progress.
+        </p>
+        <div className="mt-4 flex gap-2">
+          <Input
+            value={newSkill}
+            onChange={(e) => setNewSkill(e.target.value)}
+            placeholder="Track another skill, e.g. Kubernetes"
+            className="max-w-xs"
+          />
+          <Button
+            variant="secondary"
+            disabled={!newSkill.trim()}
+            onClick={() => {
+              setEditing(newSkill.trim().toLowerCase());
+              setCustomLabel(newSkill.trim());
+              setNewSkill("");
+            }}
+          >
+            Add
+          </Button>
+        </div>
+        {customLabel && editing === customLabel.toLowerCase() && (
+          <SkillEditor
+            userId={user.id}
+            skillKey={customLabel.toLowerCase()}
+            label={customLabel}
+            existing={mineByKey.get(customLabel.toLowerCase())}
+            history={historyFor(mineByKey.get(customLabel.toLowerCase())?.id)}
+            onClose={() => {
+              setEditing(null);
+              setCustomLabel("");
+            }}
+          />
+        )}
+        {mySkills.length > 0 && (
+          <ul className="mt-4 divide-y divide-border">
+            {mySkills.map((s) => (
+              <li key={s.id} className="py-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomLabel(s.label);
+                    setEditing(editing === s.skill_key ? null : s.skill_key);
+                  }}
+                  className="flex w-full items-center gap-4 text-left"
+                >
+                  <span className="w-44 shrink-0 truncate text-sm">{s.label}</span>
+                  <LevelDots level={s.level} target={s.target_level} />
+                  <span className="text-xs text-muted-foreground">
+                    {LEVEL_LABELS[s.level]} → target {LEVEL_LABELS[s.target_level]}
+                  </span>
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {(counts.get(s.skill_key)?.count ?? 0)} active{" "}
+                    {counts.get(s.skill_key)?.count === 1 ? "job" : "jobs"}
+                  </span>
+                </button>
+                {s.improvement_plan && (
+                  <p className="mt-1 text-xs text-muted-foreground">{s.improvement_plan}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="panel mt-6 p-6">
         <h2 className="text-lg font-semibold">Skills across your active jobs</h2>
@@ -124,21 +212,48 @@ function SkillStats() {
           </p>
         ) : (
           <ul className="mt-5 space-y-3">
-            {ranked.map((skill) => (
-              <li key={skill.label} className="flex items-center gap-4">
-                <span className="w-44 shrink-0 truncate text-sm">{skill.label}</span>
-                <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full bg-primary"
-                    style={{ width: `${(skill.count / max) * 100}%` }}
-                  />
-                </div>
-                <span className="w-24 shrink-0 text-right text-sm text-muted-foreground">
-                  {skill.count} of {active.length} (
-                  {Math.round((skill.count / Math.max(active.length, 1)) * 100)}%)
-                </span>
-              </li>
-            ))}
+            {ranked.map((skill) => {
+              const key = skill.label.toLowerCase();
+              const mine = mineByKey.get(key);
+              return (
+                <li key={skill.label}>
+                  <div className="flex items-center gap-4">
+                    <span className="w-44 shrink-0 truncate text-sm">{skill.label}</span>
+                    <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${(skill.count / max) * 100}%` }}
+                      />
+                    </div>
+                    <span className="w-24 shrink-0 text-right text-sm text-muted-foreground">
+                      {skill.count} of {active.length} (
+                      {Math.round((skill.count / Math.max(active.length, 1)) * 100)}%)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setEditing(editing === key ? null : key)}
+                      className="flex w-32 shrink-0 items-center justify-end gap-2 text-xs text-muted-foreground hover:text-primary"
+                    >
+                      {mine ? (
+                        <LevelDots level={mine.level} target={mine.target_level} />
+                      ) : (
+                        "Rate my level"
+                      )}
+                    </button>
+                  </div>
+                  {editing === key && (
+                    <SkillEditor
+                      userId={user.id}
+                      skillKey={key}
+                      label={skill.label}
+                      existing={mine}
+                      history={historyFor(mine?.id)}
+                      onClose={() => setEditing(null)}
+                    />
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
         {hidden > 0 && ranked.length > 0 && (
