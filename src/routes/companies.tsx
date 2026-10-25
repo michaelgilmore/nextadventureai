@@ -42,6 +42,26 @@ const RATINGS = [
   { value: 2, label: "2 — Favorite" },
 ] as const;
 
+type CompanySort = "rating" | "rating_asc" | "name" | "jobs" | "recent";
+
+const COMPANY_SORT_OPTIONS: { value: CompanySort; label: string }[] = [
+  { value: "rating", label: "Rating (favorites first)" },
+  { value: "rating_asc", label: "Rating (avoid first)" },
+  { value: "name", label: "Name (A–Z)" },
+  { value: "jobs", label: "Most jobs" },
+  { value: "recent", label: "Recently added" },
+];
+
+/** Rating filter: "all" keeps every company; a number keeps only that rating. */
+type RatingFilter = "all" | 0 | 1 | 2;
+
+const RATING_FILTER_OPTIONS: { value: RatingFilter; label: string }[] = [
+  { value: "all", label: "All companies" },
+  { value: 2, label: "Favorites (2)" },
+  { value: 1, label: "Neutral (1)" },
+  { value: 0, label: "Avoid (0)" },
+];
+
 type Form = {
   id: string | null;
   name: string;
@@ -68,6 +88,8 @@ function CompaniesPage() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<Form>(EMPTY);
   const [selected, setSelected] = useState<{ id: string; name: string } | null>(null);
+  const [sort, setSort] = useState<CompanySort>("rating");
+  const [ratingFilter, setRatingFilter] = useState<RatingFilter>("all");
 
   const companies = useQuery({
     queryKey: ["companies", user?.id],
@@ -109,6 +131,27 @@ function CompaniesPage() {
   const companyJobs = selected
     ? (postings.data ?? []).filter((job) => norm(job.company) === norm(selected.name))
     : [];
+
+  // Ranking (rating) drives both the filter and the default sort order.
+  const visible = (companies.data ?? [])
+    .filter((c) => ratingFilter === "all" || c.rating === ratingFilter)
+    .sort((a, b) => {
+      switch (sort) {
+        case "rating_asc":
+          return a.rating - b.rating || a.name.localeCompare(b.name);
+        case "name":
+          return a.name.localeCompare(b.name);
+        case "jobs":
+          return (
+            (counts.get(norm(b.name)) ?? 0) - (counts.get(norm(a.name)) ?? 0) ||
+            a.name.localeCompare(b.name)
+          );
+        case "recent":
+          return b.created_at.localeCompare(a.created_at);
+        default:
+          return b.rating - a.rating || a.name.localeCompare(b.name);
+      }
+    });
 
   const save = useMutation({
     mutationFn: async () => {
@@ -299,13 +342,51 @@ function CompaniesPage() {
       <p className="mt-1 text-sm text-muted-foreground">
         Select a company to edit it and see the jobs you've saved from it.
       </p>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          Show
+          <select
+            className="rounded-md border border-input bg-secondary px-2 py-1 text-sm text-foreground"
+            value={String(ratingFilter)}
+            onChange={(event) => {
+              const next = event.target.value;
+              setRatingFilter(next === "all" ? "all" : (Number(next) as RatingFilter));
+            }}
+          >
+            {RATING_FILTER_OPTIONS.map((option) => (
+              <option key={String(option.value)} value={String(option.value)}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          Sort by
+          <select
+            className="rounded-md border border-input bg-secondary px-2 py-1 text-sm text-foreground"
+            value={sort}
+            onChange={(event) => setSort(event.target.value as CompanySort)}
+          >
+            {COMPANY_SORT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <span className="text-xs text-muted-foreground">
+          {visible.length} {visible.length === 1 ? "company" : "companies"}
+        </span>
+      </div>
       <div className="mt-4 space-y-3">
-        {companies.data?.length === 0 && (
+        {visible.length === 0 && (
           <div className="panel p-8 text-center text-sm text-muted-foreground">
-            No companies reviewed yet.
+            {companies.data && companies.data.length > 0
+              ? "No companies match this filter."
+              : "No companies reviewed yet."}
           </div>
         )}
-        {companies.data?.map((c) => {
+        {visible.map((c) => {
           const jobCount = counts.get(norm(c.name)) ?? 0;
           const isOpen = selected?.id === c.id;
           return (
