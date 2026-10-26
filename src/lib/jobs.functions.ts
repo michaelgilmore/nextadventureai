@@ -173,7 +173,7 @@ export const processJobLink = createServerFn({ method: "POST" })
       content: `Job link: ${parsed?.canonicalUrl ?? "not provided"}\n\nPosting text:\n${sourceText.slice(0, 20000)}`,
     });
 
-    // 4a. Company review: rating 0 blocks the job; rating 2 is preferred.
+    // 4a. Company review: rating 0 blocks the job; ratings 3-4 are preferred.
     let companyNote = "";
     if (parsedJob.company) {
       const { data: review } = await supabase
@@ -189,8 +189,12 @@ export const processJobLink = createServerFn({ method: "POST" })
           company: { name: review.name, description: review.description },
         };
       }
-      if (review?.rating === 2) {
-        companyNote = `\n\nCOMPANY PREFERENCE\nThe candidate marked ${review.name} as a FAVORITE company. Give this role meaningful preference in the score.${
+      if (review?.rating === 3 || review?.rating === 4) {
+        companyNote = `\n\nCOMPANY PREFERENCE\nThe candidate rated ${review.name} ${
+          review.rating === 4
+            ? "4/4 (FAVORITE company). Give this role meaningful preference in the score."
+            : "3/4 (leaning towards this company). Give this role a modest preference in the score."
+        }${
           review.description ? ` Candidate's notes: ${review.description.slice(0, 1500)}` : ""
         }`;
       }
