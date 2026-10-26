@@ -64,7 +64,7 @@ const COMPANY_SORT_OPTIONS: { value: CompanySort; label: string }[] = [
 ];
 
 /** Rating filter: "all" keeps every company; a number keeps only that rating. */
-type RatingFilter = "all" | 0 | 1 | 2;
+type RatingFilter = "all" | 0 | 1 | 2 | 3 | 4;
 
 const RATING_FILTER_OPTIONS: { value: RatingFilter; label: string }[] = [
   { value: "all", label: "All companies" },
