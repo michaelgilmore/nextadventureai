@@ -36,10 +36,21 @@ export const Route = createFileRoute("/companies")({
   component: CompaniesPage,
 });
 
+/** Rating labels for the 0-4 scale, indexed by rating value. */
+export const RATING_LABELS = [
+  "Avoid",
+  "Leaning Away",
+  "Neutral",
+  "Leaning Towards",
+  "Favorite",
+] as const;
+
 const RATINGS = [
-  { value: 0, label: "0 — Do not consider" },
-  { value: 1, label: "1 — Neutral" },
-  { value: 2, label: "2 — Favorite" },
+  { value: 0, label: "0 — Avoid" },
+  { value: 1, label: "1 — Leaning Away" },
+  { value: 2, label: "2 — Neutral" },
+  { value: 3, label: "3 — Leaning Towards" },
+  { value: 4, label: "4 — Favorite" },
 ] as const;
 
 type CompanySort = "rating" | "rating_asc" | "name" | "jobs" | "recent";
@@ -57,8 +68,10 @@ type RatingFilter = "all" | 0 | 1 | 2;
 
 const RATING_FILTER_OPTIONS: { value: RatingFilter; label: string }[] = [
   { value: "all", label: "All companies" },
-  { value: 2, label: "Favorites (2)" },
-  { value: 1, label: "Neutral (1)" },
+  { value: 4, label: "Favorite (4)" },
+  { value: 3, label: "Leaning Towards (3)" },
+  { value: 2, label: "Neutral (2)" },
+  { value: 1, label: "Leaning Away (1)" },
   { value: 0, label: "Avoid (0)" },
 ];
 
@@ -77,7 +90,7 @@ const EMPTY: Form = {
   description: "",
   office_location: "",
   company_size: "",
-  rating: 1,
+  rating: 2,
 };
 
 /** Company names are matched ignoring case and surrounding spaces. */
@@ -200,8 +213,8 @@ function CompaniesPage() {
       <section className="panel p-6">
         <h1 className="text-2xl font-semibold">{form.id ? "Edit company" : "Review a company"}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Rating 2 gives a company's jobs preference. Rating 0 blocks new jobs from that company —
-          explain why in the description.
+          Rating 3 or 4 gives a company's jobs preference in the score. Rating 0 blocks new jobs
+          from that company — explain why in the description.
         </p>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -412,11 +425,10 @@ function CompaniesPage() {
                     <span className="font-display text-lg font-semibold">{c.name}</span>
                     <Badge
                       variant={
-                        c.rating === 0 ? "destructive" : c.rating === 2 ? "default" : "secondary"
+                        c.rating === 0 ? "destructive" : c.rating === 4 ? "default" : "secondary"
                       }
                     >
-                      {c.rating === 0 ? "Avoid" : c.rating === 2 ? "Favorite" : "Neutral"} ·{" "}
-                      {c.rating}
+                      {RATING_LABELS[c.rating] ?? "Unknown"} · {c.rating}
                     </Badge>
                     <Badge variant="outline">
                       {jobCount} {jobCount === 1 ? "job" : "jobs"}
