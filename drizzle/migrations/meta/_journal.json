@@ -64,6 +64,13 @@
       "when": 1793055950864,
       "tag": "0008_expand_company_rating_scale",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794755887749,
+      "tag": "0009_add_company_website",
+      "breakpoints": true
     }
   ]
 }

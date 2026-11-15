@@ -52,6 +52,7 @@ export type Database = {
           rating: number
           updated_at: string
           user_id: string
+          website_url: string | null
         }
         Insert: {
           company_size?: string
@@ -63,6 +64,7 @@ export type Database = {
           rating?: number
           updated_at?: string
           user_id: string
+          website_url?: string | null
         }
         Update: {
           company_size?: string
@@ -74,6 +76,7 @@ export type Database = {
           rating?: number
           updated_at?: string
           user_id?: string
+          website_url?: string | null
         }
         Relationships: []
       }
