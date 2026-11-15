@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { ExternalLink, Pencil, Trash2, X } from "lucide-react";
+import { ExternalLink, Globe2, Pencil, Trash2, X } from "lucide-react";
 
 import { AppShell, ScoreDial } from "@/components/AppShell";
 import { statusLabel } from "@/components/JobStatus";
@@ -81,6 +81,7 @@ type Form = {
   description: string;
   office_location: string;
   company_size: string;
+  website_url: string;
   rating: number;
 };
 
@@ -90,11 +91,32 @@ const EMPTY: Form = {
   description: "",
   office_location: "",
   company_size: "",
+  website_url: "",
   rating: 2,
 };
 
 /** Company names are matched ignoring case and surrounding spaces. */
 const norm = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
+
+/** Store a safe, absolute web address while allowing convenient domain-only input. */
+function normalizeWebsiteUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const candidate = /^[a-z][a-z\d+.-]*:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  let url: URL;
+  try {
+    url = new URL(candidate);
+  } catch {
+    throw new Error("Enter a valid company website, such as https://example.com.");
+  }
+  if ((url.protocol !== "http:" && url.protocol !== "https:") || !url.hostname) {
+    throw new Error("Company website must use http or https.");
+  }
+  return url.toString();
+}
 
 function CompaniesPage() {
   const { user, loading } = useAuth();
@@ -174,6 +196,7 @@ function CompaniesPage() {
         description: form.description.trim(),
         office_location: form.office_location.trim(),
         company_size: form.company_size.trim(),
+        website_url: normalizeWebsiteUrl(form.website_url),
         rating: form.rating,
       };
       if (!payload.name) throw new Error("Company name is required.");
@@ -203,7 +226,15 @@ function CompaniesPage() {
   const openCompany = (company: { id: string; name: string }) => {
     const row = companies.data?.find((c) => c.id === company.id);
     if (!row) return;
-    setForm({ ...row });
+    setForm({
+      id: row.id,
+      name: row.name,
+      description: row.description,
+      office_location: row.office_location,
+      company_size: row.company_size,
+      website_url: row.website_url ?? "",
+      rating: row.rating,
+    });
     setSelected({ id: row.id, name: row.name });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -251,6 +282,16 @@ function CompaniesPage() {
               placeholder="e.g. 200–500 employees"
               value={form.company_size}
               onChange={(e) => set({ company_size: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="c-website">Company website</Label>
+            <Input
+              id="c-website"
+              type="url"
+              placeholder="https://example.com"
+              value={form.website_url}
+              onChange={(e) => set({ website_url: e.target.value })}
             />
           </div>
         </div>
@@ -439,6 +480,20 @@ function CompaniesPage() {
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-1">
+                  {c.website_url && (
+                    <Button variant="ghost" size="sm" asChild>
+                      <a
+                        href={c.website_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Visit ${c.name} website`}
+                        title={`Visit ${c.name} website`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Globe2 className="size-4" />
+                      </a>
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"

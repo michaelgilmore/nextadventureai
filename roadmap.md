@@ -18,4 +18,5 @@
 
 - [x] Fill office location and company size on every seeded company entry (location from its postings, size looked up online).
 - [x] Sort and filter the company list by ranking (favorites/neutral/avoid), name, job count, or date added.
+- [x] Add an editable company website field and a website link icon on each company entry; verified adding, editing, clearing, and deleting while signed in.
 - [ ] User to review the auto-filled locations and sizes, and delete duplicate company names (e.g. "Analog Devices" vs "Analog Devices, Inc.").
