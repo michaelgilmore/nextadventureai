@@ -158,9 +158,16 @@ function CompaniesPage() {
   });
 
   const counts = new Map<string, number>();
+  const fitTotals = new Map<string, { sum: number; n: number }>();
   for (const job of postings.data ?? []) {
     const key = norm(job.company);
     if (key) counts.set(key, (counts.get(key) ?? 0) + 1);
+    if (key && typeof job.match_score === "number") {
+      const f = fitTotals.get(key) ?? { sum: 0, n: 0 };
+      f.sum += job.match_score;
+      f.n += 1;
+      fitTotals.set(key, f);
+    }
   }
 
   const companyJobs = selected
@@ -478,6 +485,7 @@ function CompaniesPage() {
                   <p className="text-sm text-muted-foreground">
                     {[c.office_location, c.company_size].filter(Boolean).join(" · ")}
                   </p>
+                  <CompanyFit fit={fitTotals.get(norm(c.name))} />
                 </div>
                 <div className="flex shrink-0 gap-1">
                   {c.website_url && (
@@ -527,5 +535,27 @@ function CompaniesPage() {
         })}
       </div>
     </AppShell>
+  );
+}
+
+function CompanyFit({ fit }: { fit: { sum: number; n: number } | undefined }) {
+  if (!fit || fit.n === 0) {
+    return <p className="mt-2 text-xs text-muted-foreground">Fit: no scored jobs yet</p>;
+  }
+  const score = Math.round(fit.sum / fit.n);
+  const tone = score >= 75 ? "bg-success" : score >= 50 ? "bg-warning" : "bg-destructive";
+  const label = score >= 75 ? "Strong fit" : score >= 50 ? "Moderate fit" : "Weak fit";
+  return (
+    <div
+      className="mt-2 flex items-center gap-2"
+      title={`Average match score across ${fit.n} scored ${fit.n === 1 ? "job" : "jobs"} (your resume and goals)`}
+    >
+      <div className="h-2 w-28 overflow-hidden rounded-full bg-secondary">
+        <div className={`h-full ${tone}`} style={{ width: `${score}%` }} />
+      </div>
+      <span className="text-xs text-muted-foreground">
+        {label} · {score}/100 · {fit.n} {fit.n === 1 ? "job" : "jobs"}
+      </span>
+    </div>
   );
 }
