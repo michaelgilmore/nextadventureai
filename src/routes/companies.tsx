@@ -53,13 +53,14 @@ const RATINGS = [
   { value: 4, label: "4 — Favorite" },
 ] as const;
 
-type CompanySort = "rating" | "rating_asc" | "name" | "jobs" | "recent";
+type CompanySort = "rating" | "rating_asc" | "name" | "jobs" | "fit" | "recent";
 
 const COMPANY_SORT_OPTIONS: { value: CompanySort; label: string }[] = [
   { value: "rating", label: "Rating (favorites first)" },
   { value: "rating_asc", label: "Rating (avoid first)" },
   { value: "name", label: "Name (A–Z)" },
   { value: "jobs", label: "Most jobs" },
+  { value: "fit", label: "Best fit" },
   { value: "recent", label: "Recently added" },
 ];
 
@@ -188,6 +189,13 @@ function CompaniesPage() {
             (counts.get(norm(b.name)) ?? 0) - (counts.get(norm(a.name)) ?? 0) ||
             a.name.localeCompare(b.name)
           );
+        case "fit": {
+          const avg = (name: string) => {
+            const f = fitTotals.get(norm(name));
+            return f && f.n ? f.sum / f.n : -1;
+          };
+          return avg(b.name) - avg(a.name) || a.name.localeCompare(b.name);
+        }
         case "recent":
           return b.created_at.localeCompare(a.created_at);
         default:
