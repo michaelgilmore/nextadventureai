@@ -1,7 +1,7 @@
 # Resume uploads
 
-- [ ] Accept DOCX resumes and extract their complete text for job scoring.
-- [ ] Verify DOCX parsing and a signed-in upload.
+- [x] Accept DOCX resumes and extract their complete text for job scoring.
+- [x] Verify DOCX parsing and a signed-in upload, including header contact details and bullet lists.
 
 # Work experience
 
