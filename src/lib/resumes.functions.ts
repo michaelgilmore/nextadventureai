@@ -6,10 +6,13 @@ const EXTRACT_SYSTEM = `You read a resume file and return its full text.
 Return ONLY JSON: {"text": string}
 "text" is the complete resume content as clean plain text, preserving section headings, roles, dates, bullet points and skills. Do not summarize or omit anything.`;
 
-function decodeBase64(base64: string): string {
+function decodeBase64Bytes(base64: string): Uint8Array {
   const binary = atob(base64);
-  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
+  return Uint8Array.from(binary, (char) => char.charCodeAt(0));
+}
+
+function decodeBase64(base64: string): string {
+  return new TextDecoder().decode(decodeBase64Bytes(base64));
 }
 
 export const saveResume = createServerFn({ method: "POST" })
@@ -36,6 +39,12 @@ export const saveResume = createServerFn({ method: "POST" })
       const mime = data.mimeType ?? "";
       if (mime.startsWith("text/") || /\.(txt|md|markdown)$/i.test(data.fileName ?? "")) {
         text = decodeBase64(data.base64).trim();
+      } else if (
+        mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        /\.docx$/i.test(data.fileName ?? "")
+      ) {
+        const { extractDocxText } = await import("@/lib/docx-text");
+        text = extractDocxText(decodeBase64Bytes(data.base64));
       } else if (mime === "application/pdf" || /\.pdf$/i.test(data.fileName ?? "")) {
         const { aiJson } = await import("@/lib/ai.server");
         const result = await aiJson<{ text: string }>({
@@ -54,13 +63,13 @@ export const saveResume = createServerFn({ method: "POST" })
         text = (result.text ?? "").trim();
       } else {
         throw new Error(
-          "That file type isn't supported. Upload a PDF or a plain text file, or paste the text instead.",
+          "That file type isn't supported. Upload a PDF, DOCX, or plain text file, or paste the text instead.",
         );
       }
     }
 
     if (text.length < 200) {
-      throw new Error("Couldn't read enough text from that file. Try a PDF or paste the text instead.");
+      throw new Error("Couldn't read enough text from that file. Try a PDF, DOCX, or paste the text instead.");
     }
 
     const { count } = await supabase

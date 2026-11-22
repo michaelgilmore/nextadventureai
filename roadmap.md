@@ -1,3 +1,8 @@
+# Resume uploads
+
+- [ ] Accept DOCX resumes and extract their complete text for job scoring.
+- [ ] Verify DOCX parsing and a signed-in upload.
+
 # Work experience
 
 - [x] Add private company-by-company work experience storage and a Resume section with add, edit, and delete controls.

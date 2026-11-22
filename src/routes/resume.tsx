@@ -256,11 +256,11 @@ function ResumePage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="file">PDF or text file</Label>
+              <Label htmlFor="file">PDF, DOCX, or text file</Label>
               <Input
                 id="file"
                 type="file"
-                accept=".pdf,.txt,.md,text/plain,application/pdf"
+                accept=".pdf,.docx,.txt,.md,text/plain,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 onChange={(event) => setFile(event.target.files?.[0] ?? null)}
               />
             </div>
